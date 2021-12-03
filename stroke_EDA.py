@@ -45,7 +45,7 @@ print()
 print("TOTAL NULL VALUES:")
 print(dataset['stroke'].isnull().sum())
 print()
- 
+
 # =============================
 # Explore features
 # =============================
@@ -253,28 +253,3 @@ sns.lineplot(data=stroke_rates)
 plt.xlabel("Age")
 plt.ylabel("Cumulative Stroke Risk")
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
