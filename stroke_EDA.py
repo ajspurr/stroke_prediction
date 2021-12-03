@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from os import chdir
-from pathlib import PureWindowsPath
+from pathlib import PureWindowsPath, Path
 import seaborn as sns 
 import matplotlib.pyplot as plt
 
@@ -9,42 +9,37 @@ import matplotlib.pyplot as plt
 project_dir = PureWindowsPath(r"D:\GitHubProjects\Stroke-Prediction\\")
 chdir(project_dir)
 dataset = pd.read_csv('./input/stroke-data.csv', index_col='id')
+output_dir = Path(project_dir, Path('./output'))
+
+
 
 # ====================================================================================================================
 # EXPLORATORY DATA ANALYSIS
 # ====================================================================================================================
-print()
-print("DATASET SHAPE:")
+print("\nDATASET SHAPE:")
 print(dataset.shape)
-print()
-print("COLUMN INFO:")
+print("\nCOLUMN INFO:")
 print(dataset.info())
-print()
 pd.set_option("display.max_columns", len(dataset.columns))
 
-print("BASIC INFORMATION NUMERICAL VARIABLES:")
+print("\nBASIC INFORMATION NUMERICAL VARIABLES:")
 print(dataset.describe())
-print()
-print("DATA SAMPLE:")
-dataset.head()
-print()
+print("\nDATA SAMPLE:")
+print(dataset.head())
 pd.reset_option("display.max_columns")
  
 # =============================
 # Explore target 
 # =============================
 # size includes NaN values, count does not
-print("TARGET SUMMARY:")
+print("\nTARGET SUMMARY:")
 print(dataset['stroke'].agg(['size', 'count', 'nunique', 'unique']))
-print()
 # Count of each unique value
-print("VALUE COUNTS:")
+print("\nVALUE COUNTS:")
 print(dataset['stroke'].value_counts())
-print()
 # Total null values
-print("TOTAL NULL VALUES:")
+print("\nTOTAL NULL VALUES:")
 print(dataset['stroke'].isnull().sum())
-print()
 
 # =============================
 # Explore features
@@ -55,9 +50,8 @@ col_missing_values = col_missing_values.rename(columns = {0:'missing_values'})
 
 # Calculate percent missing in each column
 col_missing_values['percent_missing'] = (col_missing_values['missing_values'] / len(dataset.index)) * 100
-print("MISSING VALUES:")
+print("\nMISSING VALUES:")
 print(col_missing_values)
-print()
 
 # Column 'bmi'  missing 201 values, about 4% of the total
 # As 'bmi' values are missing because they weren't recorded (as opposed to being values that don't exist), 
@@ -85,6 +79,9 @@ categorical_cols.remove('stroke')
 # Visualize data
 # =======================================================================================
 
+def save_image(dir, filename, dpi=300, bbox_inches='tight'):
+    plt.savefig(dir/filename, dpi=dpi, bbox_inches=bbox_inches)
+
 # =============================
 # Categorical variables
 # =============================
@@ -92,8 +89,11 @@ categorical_cols.remove('stroke')
 # Categorical data bar charts
 for col in categorical_cols:
     sns.barplot(x=dataset[col].value_counts().index, y=dataset[col].value_counts()).set_title(col)
+    save_filename = 'counts_' + col
+    save_image(output_dir, save_filename, bbox_inches='tight')
     plt.show()
 sns.barplot(x=dataset['stroke'].value_counts().index, y=dataset['stroke'].value_counts()).set_title('stroke')
+save_image(output_dir, 'counts_stroke')
 plt.show()
 # Very few cases of stroke, hypertension, and heart disease. It will be interesting to see if they are correlated.
 
@@ -101,6 +101,9 @@ plt.show()
 # This version has the categorical variable on the x-axis, each one split by how many have had strokes or not
 for col in categorical_cols:
     sns.catplot(x=col, data=dataset, kind="count", hue="stroke")
+    #plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title='stroke')
+    save_filename = 'count_stroke_by_cat_' + col
+    save_image(output_dir, save_filename)
     plt.show()
 # Not very helpful visualization as the number of records with strokes is very low
 
@@ -127,29 +130,37 @@ def boxplot_percentage_of_target_category(data, target, categorical_var):
     # Add column which represents the categorical variable count as a percentage of that category of target 
     # (stroke vs. not stroke). I used range to give them unique values for debugging purposes
     df_grouped['percent_of_target_cat'] = range(len(df_grouped))
+    
+    # Will group by categorical variable, then calculate the percent that had stroke vs. didn't
+    df_grouped['percent_of_cat_var'] = range(len(df_grouped))
 
     # Loop through multi-index dataframe, giving the new column it's appropriate value
     for target_value in df_grouped.index.levels[0]:
         for categorical_var_value in df_grouped.index.levels[1]:
             df_grouped.loc[(target_value, categorical_var_value), 'percent_of_target_cat'] = df_grouped.loc[(target_value, categorical_var_value), 'count'] / df_grouped.loc[(target_value, slice(None)), :]['count'].sum()
+            df_grouped.loc[(target_value, categorical_var_value), 'percent_of_cat_var'] = df_grouped.loc[(target_value, categorical_var_value), 'count'] / df_grouped.loc[(slice(None), categorical_var_value), :]['count'].sum()
 
     # Convert from multi-index to two columns with those index values 
     # This will add columns for target and categorical variable value, as it makes it easier to create a boxplot
     df_grouped = df_grouped.reset_index()
     
     # Plots figure with target as x-axis labels, each with a bar for each categorical variable
-    plt.figure() # Ensures seaborn won't plot multiple figures on top of one another
+    #plt.figure() # Ensures seaborn won't plot multiple figures on top of one another
     sns.barplot(x=df_grouped[target], y=df_grouped['percent_of_target_cat'], hue=df_grouped[categorical_var])
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title=categorical_var)
+    plt.show()
     
     # Plots figure with categorical variable as x-axis labels, each with a bar for each target
-    plt.figure() # Ensures seaborn won't plot multiple figures on top of one another
-    sns.barplot(x=df_grouped[categorical_var], y=df_grouped['percent_of_target_cat'], hue=df_grouped[target])
+    #plt.figure() # Ensures seaborn won't plot multiple figures on top of one another
+    sns.barplot(x=df_grouped[categorical_var], y=df_grouped['percent_of_cat_var'], hue=df_grouped[target])
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title=target)
+    save_filename = 'perc_stroke_by_cat_' + categorical_var
+    save_image(output_dir, save_filename)
+    plt.show()
     
 for cat_cols in categorical_cols:
     boxplot_percentage_of_target_category(dataset, 'stroke', cat_cols)
-    plt.show()
+    
 
 
 # ==========================================================
