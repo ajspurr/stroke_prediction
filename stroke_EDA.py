@@ -376,10 +376,10 @@ plt.show()
 # Plot boxplots of  continuous and categorical variables with correlation ratio > 0.3
 for col in corr_ratio_df.columns:
     for row in corr_ratio_df.index:
-        corr_value = corr_ratio_df.loc[[row], [col]].round(2)
+        corr_value = corr_ratio_df.loc[[row], [col]].iat[0,0].round(2)
         if corr_value > 0.3:
             sns.boxplot(data=dataset, x=row, y=col)
-            plt.title('Relationship Between ' + format_col(col) + ' and ' + format_col(row))
+            plt.title(format_col(col) + ' vs. ' + format_col(row) + ' (Corr Ratio=' + str(corr_value) + ')')
             save_filename = 'relationship_' + col + '_' + row
             save_image(output_dir, save_filename)  
             plt.show()
