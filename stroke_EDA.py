@@ -1,9 +1,12 @@
 import pandas as pd
 import numpy as np
+import scipy.stats as ss
 from os import chdir
 from pathlib import PureWindowsPath, Path
 import seaborn as sns 
 import matplotlib.pyplot as plt
+from sklearn.impute import SimpleImputer
+
 
 # Read in data
 project_dir = PureWindowsPath(r"D:\GitHubProjects\Stroke-Prediction\\")
@@ -68,14 +71,15 @@ more_cat_cols = [cname for cname in num_uniques.index if  num_uniques[cname] < 3
 categorical_cols = categorical_cols + more_cat_cols
 numerical_cols = [col for col in numerical_cols if col not in more_cat_cols]
 
+# Will create list of categorical variables with target and one without target
+cat_cols_w_target = categorical_cols.copy()
+categorical_cols.remove('stroke')
+
 # Map 'hypertension' and 'heart_disease' numeric values to categorical values
 hypertension_dict = {0:'normotensive', 1:'hypertensive'}
 heart_disease_dict = {0:'no_heart_disease', 1:'heart_disease'}
 dataset['hypertension'] = dataset['hypertension'].map(hypertension_dict)
 dataset['heart_disease'] = dataset['heart_disease'].map(heart_disease_dict)
-
-# Remove target variable 'stroke' from list of categorical variables, it can be analyzed on its own
-categorical_cols.remove('stroke')
 
 # =======================================================================================
 # Visualize data
@@ -84,7 +88,7 @@ categorical_cols.remove('stroke')
 def save_image(dir, filename, dpi=300, bbox_inches='tight'):
     plt.savefig(dir/filename, dpi=dpi, bbox_inches=bbox_inches)
 
-# Format column names for figure labels
+# Format column names for figure labels (title() capitalizes every word in a string)
 formatted_cols = {}
 for col in dataset.columns:
     formatted_cols[col] = col.replace('_', ' ').title()
@@ -98,23 +102,21 @@ def format_col(col_name):
 # ==========================================================
 
 # Categorical data bar charts, total count of each category
-for col in categorical_cols:
+for col in cat_cols_w_target:
     sns.barplot(x=dataset[col].value_counts().index, y=dataset[col].value_counts())
     plt.title(format_col(col))
     save_filename = 'counts_' + col
     save_image(output_dir, save_filename, bbox_inches='tight')
     plt.show()
-sns.barplot(x=dataset['stroke'].value_counts().index, y=dataset['stroke'].value_counts()).set_title('Stroke')
-save_image(output_dir, 'counts_stroke')
-plt.show()
+    
 # Very few cases of stroke, hypertension, and heart disease. It will be interesting to see if they are correlated.
 
 # =============================
-# Relationship between categorical data and outcome
+# Relationship between categorical data and target
 # =============================
 # These bar charts use the categorical variable on the x-axis, each one split by stroke vs. no stroke
 for col in categorical_cols:
-    sns.catplot(x=col, data=dataset, kind="count", hue="stroke", legend=False)
+    sns.catplot(data=dataset, x=col, hue="stroke", kind="count", legend=False)
     plt.title('Stroke Count by ' + format_col(col))
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title='stroke')
     save_filename = 'count_stroke_by_' + col
@@ -124,7 +126,7 @@ for col in categorical_cols:
 
 # This version has stroke on the x-axis, each one split by how many records are in each categorical variable
 for col in categorical_cols:
-    sns.catplot(x="stroke", data=dataset, kind="count", hue=col)
+    sns.catplot(data=dataset, x="stroke", hue=col, kind="count")
     plt.title(format_col(col) + ' Count by Stroke')
     plt.show()
 # A little better, but again, since number of strokes is so low, percentages may be better:
@@ -191,8 +193,6 @@ def boxplot_percentage(data, target, categorical_var):
     
 for cat_cols in categorical_cols:
     boxplot_percentage(dataset, 'stroke', cat_cols)
-    
-#dataset[(dataset['stroke']==1)]['stroke']
 
 # ==========================================================
 # Continuous variables
@@ -216,15 +216,19 @@ for col in numerical_cols:
     sns.kdeplot(data=dataset[dataset.stroke==0], x=col, shade=True, alpha=0.5, label='no stroke')
     plt.title(format_col(col) + ' Histogram by Stroke')
     save_filename = 'hist_by_stroke-' + col
-    save_image(output_dir, save_filename)    
     plt.legend()
+    save_image(output_dir, save_filename)    
     plt.show()
 
 # Continuous variables 'age' and 'avg_glucose_level' with observable difference in distribution in stroke vs. no stroke
 
-# =============================
+
+# =======================================================================================
+# Correlation between variables
+# =======================================================================================
+# ==========================================================
 # Correlation between continuous variables
-# =============================
+# ==========================================================
 
 # Find correlation between variables
 # np.trui sets all the values above a certain diagonal to 0, so we don't have redundant boxes
@@ -242,8 +246,11 @@ plt.show()
 
 # Age has the highest correlation with other continuous variables
 
+# =============================
+# Further exploration correlation continuous variables
+# =============================
 # Since age has the highest correlation with other variables, will plot those relationships
-# First, scatterplots and lineplots showing relationship between age and other continuous variables
+# Scatterplots and lineplots showing relationship between age and other continuous variables
 sns.scatterplot(data=dataset, x='age', y='bmi')
 plt.show()
 
@@ -262,30 +269,120 @@ save_filename = 'correlation_age_avg_glucose_level'
 save_image(output_dir, save_filename)  
 plt.show()
 
-# =============================
-# Relationship between age and categorical variables (including stroke)
-# =============================
-# Second, boxplots showing relationship between age and categorical variables
-for cat_col in categorical_cols:
-    sns.boxplot(data=dataset, x=cat_col, y='age')
-    plt.title('Relationship Between Age and ' + format_col(cat_col))
-    save_filename = 'relationship_age_' + cat_col
-    save_image(output_dir, save_filename)  
-    plt.show()
-    
-sns.boxplot(data=dataset, x='stroke', y='age')
-plt.title('Relationship Between Age and Stroke')
-save_filename = 'relationship_age_stroke'
+# ==========================================================
+# Association between categorical variables
+# ==========================================================
+# Credit to: https://towardsdatascience.com/the-search-for-categorical-correlation-a1cf7f1888c9
+
+# Calculate Cramér’s V (based on a nominal variation of Pearson’s Chi-Square Test) between two categorical featuers 'x' and 'y'
+def cramers_v(x, y):
+    confusion_matrix = pd.crosstab(x,y)
+    chi2 = ss.chi2_contingency(confusion_matrix)[0]
+    n = confusion_matrix.sum().sum()
+    phi2 = chi2/n
+    r,k = confusion_matrix.shape
+    phi2corr = max(0, phi2-((k-1)*(r-1))/(n-1))
+    rcorr = r-((r-1)**2)/(n-1)
+    kcorr = k-((k-1)**2)/(n-1)
+    return np.sqrt(phi2corr/min((kcorr-1),(rcorr-1)))
+
+# New dataframe to store results for each combination of categorical variables
+cramers_df = pd.DataFrame(columns=cat_cols_w_target, index=cat_cols_w_target)
+
+# Loop through each paring of categorical variables, calculating the Cramer's V for each and storing in dataframe
+for col in cramers_df.columns:
+    for row in cramers_df.index:
+        cramers_df.loc[[row], [col]] = cramers_v(dataset[row], dataset[col])
+
+# Values default to 'object' dtype, will convert to numeric
+cramers_df = cramers_df.apply(pd.to_numeric)
+
+# Output results as heatmap
+sns.heatmap(cramers_df, annot=True, linewidth=.8, cmap="Blues", vmin=0, vmax=1)
+plt.title("Association Between Categorical Variables (Cramér's V)")
+save_filename = 'correlation_cat_variables'
 save_image(output_dir, save_filename)  
 plt.show()
 
-# Other than obvious relationships (higher age in those who were ever married), individuals with hypertension, heart disease, and stroke were older
+# =============================
+# Further exploration association categorical variables
+# =============================
+# Plot catplots of categorical variables with correlation ratio > 0.29
+# Loop through cramers_df diagonally to skip redundant pairings
+for col in range(len(cramers_df.columns)-1):
+    for row in range(col+1, 8):
+        cramers_value = cramers_df.iloc[[row], [col]].iat[0,0].round(2)
+        if cramers_value > 0.29:
+            column_name = cramers_df.columns[col]
+            row_name = cramers_df.index[row]
+            sns.catplot(data=dataset, x=column_name, hue=row_name, kind="count", legend=False)
+            plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title=row_name)
+            plt.title(format_col(column_name) + ' vs. ' + format_col(row_name) + " (Cramer's=" + str(cramers_value) + ')')
+            save_filename = 'compare_' + column_name + '_vs_' + row_name
+            save_image(output_dir, save_filename)
+            plt.show()
+
+# ==========================================================
+# Correlation between continuous and categorical variables
+# ==========================================================
+# Credit to: https://towardsdatascience.com/the-search-for-categorical-correlation-a1cf7f1888c9
+
+# Calculate correlation ratio between a categorical feature ('categories') and numeric feature ('measurements')
+def correlation_ratio(categories, measurements):
+    merged_df = categories.to_frame().merge(measurements, left_index=True, right_index=True)
+    fcat, _ = pd.factorize(categories)
+    merged_df['fcat'] = fcat
+    cat_num = np.max(fcat)+1
+    y_avg_array = np.zeros(cat_num)
+    n_array = np.zeros(cat_num)
+    for i in range(0,cat_num):
+        cat_measures = merged_df[merged_df['fcat']==i][measurements.name]
+        n_array[i] = len(cat_measures)
+        y_avg_array[i] = np.average(cat_measures)
+    y_total_avg = np.sum(np.multiply(y_avg_array,n_array))/np.sum(n_array)
+    numerator = np.sum(np.multiply(n_array,np.power(np.subtract(y_avg_array,y_total_avg),2)))
+    denominator = np.sum(np.power(np.subtract(measurements,y_total_avg),2))
+    if numerator == 0:
+        eta = 0.0
+    else:
+        eta = np.sqrt(numerator/denominator)
+    return eta
+
+# Grab numerical data from original dataset so that I can impute values(correlation_ratio() cannot handle unknown values)
+num_df = dataset[numerical_cols]
+num_df = pd.DataFrame(SimpleImputer().fit_transform(num_df), columns=numerical_cols, index=dataset.index)
+
+# New dataframe to store results for each combination of numerical and categorical variables
+corr_ratio_df = pd.DataFrame(columns=num_df.columns, index=cat_cols_w_target)
+
+# Loop through each paring of numerical and categorical variables, calculating the correlation ratio for each and storing in dataframe
+for col in corr_ratio_df.columns:
+    for row in corr_ratio_df.index:
+        corr_ratio_df.loc[[row], [col]] = correlation_ratio(dataset[row], num_df[col])
+
+# Values default to 'object' dtype, will convert to numeric
+corr_ratio_df = corr_ratio_df.apply(pd.to_numeric)
+
+# Output results as heatmap
+sns.heatmap(corr_ratio_df, annot=True, linewidth=.8, cmap="Blues", vmin=0, vmax=1)
+plt.title("Correlation Ratio Between Numerical and Categorical Variables")
+save_filename = 'correlation_cat_num_variables'
+save_image(output_dir, save_filename)  
+plt.show()
 
 # =============================
-# Correlation between categorical variables
+# Further exploration correlation continuous and categorical variables
 # =============================
-
-# Could include chi-square test here
+# Plot boxplots of  continuous and categorical variables with correlation ratio > 0.3
+for col in corr_ratio_df.columns:
+    for row in corr_ratio_df.index:
+        corr_value = corr_ratio_df.loc[[row], [col]].round(2)
+        if corr_value > 0.3:
+            sns.boxplot(data=dataset, x=row, y=col)
+            plt.title('Relationship Between ' + format_col(col) + ' and ' + format_col(row))
+            save_filename = 'relationship_' + col + '_' + row
+            save_image(output_dir, save_filename)  
+            plt.show()
 
 # =============================
 # Cumulative Risk of stroke by age
