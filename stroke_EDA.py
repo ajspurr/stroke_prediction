@@ -5,6 +5,7 @@ from os import chdir
 from pathlib import PureWindowsPath, Path
 import seaborn as sns 
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from sklearn.impute import SimpleImputer
 
 
@@ -85,17 +86,27 @@ dataset['heart_disease'] = dataset['heart_disease'].map(heart_disease_dict)
 # Visualize data
 # =======================================================================================
 
+# Standardize image saving parameters
 def save_image(dir, filename, dpi=300, bbox_inches='tight'):
     plt.savefig(dir/filename, dpi=dpi, bbox_inches=bbox_inches)
 
-# Format column names for figure labels (title() capitalizes every word in a string)
+# Create dictionary of formatted column names  to be used for
+# figure labels (title() capitalizes every word in a string)
 formatted_cols = {}
 for col in dataset.columns:
     formatted_cols[col] = col.replace('_', ' ').title()
 formatted_cols['bmi'] = 'BMI'
 
+# Function returning the formatted version of column name
 def format_col(col_name):
     return formatted_cols[col_name]
+
+# Create 2d array of given size, used for figures with gridspec
+def create_2d_array(num_rows, num_cols):
+    matrix = []
+    for r in range(0, num_rows):
+        matrix.append([0 for c in range(0, num_cols)])
+    return matrix
 
 # ==========================================================
 # Categorical variables
@@ -104,12 +115,60 @@ def format_col(col_name):
 # Categorical data bar charts, total count of each category
 for col in cat_cols_w_target:
     sns.barplot(x=dataset[col].value_counts().index, y=dataset[col].value_counts())
-    plt.title(format_col(col))
+    plt.title(format_col(col) + ' Count')
+    plt.ylabel('Count')
+    plt.xlabel(format_col(col))
     save_filename = 'counts_' + col
     save_image(output_dir, save_filename, bbox_inches='tight')
     plt.show()
     
 # Very few cases of stroke, hypertension, and heart disease. It will be interesting to see if they are correlated.
+
+   
+# =============================
+# Combine into one figure
+# =============================
+# Create figure, gridspec, and 2d array of axes/subplots with given number of rows and columns
+fig = plt.figure(constrained_layout=True, figsize=(16, 8))
+num_rows = 2
+num_cols = 4
+ax_array = create_2d_array(num_rows, num_cols)
+gs = fig.add_gridspec(num_rows, num_cols)
+
+# Map each subplot/axis to gridspec location
+for r in range(len(ax_array)):
+    for c in range(len(ax_array[r])):
+        ax_array[r][c] = fig.add_subplot(gs[r,c])
+
+# Flatten 2d array of axis objects to iterate through easier
+ax_array_flat = np.array(ax_array).flatten()
+
+# Loop through categorical variables, plotting each in the figure
+i = 0
+for col in cat_cols_w_target:
+    axis = ax_array_flat[i]
+    sns.barplot(x=dataset[col].value_counts().index, y=dataset[col].value_counts(), ax=axis)
+    axis.set_title(format_col(col) + ' Count')
+    axis.set_xlabel(format_col(col))
+    
+    # Rotate x-axis tick labels so they don't overlap
+    plt.setp(axis.get_xticklabels(), rotation=30, horizontalalignment='right')
+    
+    # Only want to label the y-axis on the first subplot of each row
+    if i % 4 == 0:
+        axis.set_ylabel('Count')
+    else:
+        # set visibility of y-axis as False
+        axis.set_ylabel('')
+    i += 1
+
+# Finalize figure formatting and export
+fig.suptitle('Categorical Variable Counts', fontsize=24)
+fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
+save_filename = 'combined_cat_counts'
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
+
 
 # =============================
 # Relationship between categorical data and target
