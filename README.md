@@ -1,11 +1,14 @@
 # Stroke-Prediction
 Exploratory data analysis, data preprocessing, model training, parameter tuning, stroke prediction, and model evaluation using Kaggle stroke dataset: https://www.kaggle.com/fedesoriano/stroke-prediction-dataset
 
-# EDA
-Highlights from Exploratory Data Analysis
+## EDA
+Highlights from Exploratory Data Analysis ([code](/stroke_EDA.py), [all figures](/output))
 
-Full code: [stroke_EDA.py](/stroke_EDA.py)
+1. Target variable, stroke, is highly imbalanced (bottom right figure)
 
-All figures: [output folder](/output)
+<p align="center">
+	<img src="/output/combined_cat_counts.png" width="900" align="middle"/>
+</p>
 
-<img src="/output/hist_by_stroke-age.png" width="600" />
+
+<img src="/output/hist_by_stroke-age.png" width="400" align="middle"/>
