@@ -214,7 +214,7 @@ for col in numerical_cols:
 for col in numerical_cols:
     sns.kdeplot(data=dataset[dataset.stroke==1], x=col, shade=True, alpha=1, label='stroke')
     sns.kdeplot(data=dataset[dataset.stroke==0], x=col, shade=True, alpha=0.5, label='no stroke')
-    plt.title(format_col(col) + ' Histogram by Stroke')
+    plt.title(format_col(col) + ' Distribution by Outcome')
     save_filename = 'hist_by_stroke-' + col
     plt.legend()
     save_image(output_dir, save_filename)    
