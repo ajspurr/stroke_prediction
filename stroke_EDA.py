@@ -332,13 +332,55 @@ for col in numerical_cols:
     sns.kdeplot(data=dataset[dataset.stroke==1], x=col, shade=True, alpha=1, label='stroke')
     sns.kdeplot(data=dataset[dataset.stroke==0], x=col, shade=True, alpha=0.5, label='no stroke')
     plt.title(format_col(col) + ' Distribution by Outcome')
-    save_filename = 'hist_by_stroke-' + col
     plt.legend()
+    save_filename = 'hist_by_stroke-' + col
     save_image(output_dir, save_filename)    
     plt.show()
 
 # Continuous variables 'age' and 'avg_glucose_level' with observable difference in distribution in stroke vs. no stroke
 
+
+# =============================
+# Combine continuous variable graphs into one figure
+# =============================
+# Create figure, gridspec, list of axes/subplots mapped to gridspec location
+fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=2, num_cols=3, figsize=(16, 8))
+
+# Loop through categorical variables, plotting each in the figure
+i = 0
+for col in numerical_cols:
+    axis = ax_array_flat[i]
+    sns.distplot(dataset[col], ax=axis)
+    axis.set_title(format_col(col) + ' Histogram')
+    axis.set_xlabel(format_col(col))
+    
+    # Will use same loop to plot histogram by stroke under histogram
+    axis2 = ax_array_flat[i+3]
+    sns.kdeplot(data=dataset[dataset.stroke==1], x=col, shade=True, alpha=1, label='stroke', ax=axis2)
+    sns.kdeplot(data=dataset[dataset.stroke==0], x=col, shade=True, alpha=0.5, label='no stroke', ax=axis2)
+    axis2.set_title(format_col(col) + ' Distribution by Outcome')
+    axis2.set_xlabel(format_col(col))
+    axis2.legend()
+    
+    
+    
+    # Rotate x-axis tick labels so they don't overlap
+    # plt.setp(axis.get_xticklabels(), rotation=30, horizontalalignment='right')
+    
+    # # Only want to label the y-axis on the first subplot of each row
+    # if i % 4 == 0:
+    #     axis.set_ylabel('Percent Stroke')
+    # else:
+    #     # set visibility of y-axis as False
+    #     axis.set_ylabel('')
+    i += 1
+
+# Finalize figure formatting and export
+fig.suptitle('Continuous Variable Distribution', fontsize=24)
+fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
+save_filename = 'combined_dist'
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
 
 # =======================================================================================
 # Correlation between variables
