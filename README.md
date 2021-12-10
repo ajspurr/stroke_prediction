@@ -8,9 +8,10 @@ Highlights from Exploratory Data Analysis ([code](/stroke_EDA.py), [all figures]
 
 <p align="center"><img src="/output/combined_cat_counts.png" width="900" align="middle"/></p>
 
-
 2. Stroke prevalence noticeably higher in those with hypertension, heart disease, and who have ever been married. Noticeably lower in children
 
 <p align="center"><img src="/output/combined_perc_stroke.png" width="900" align="middle"/></p> 
 
-<img src="/output/hist_by_stroke-age.png" width="400" align="middle"/>
+3. All continuous variables have somewhat normal or uniform distribution, 'avg_glucose_level' with a positive skew and somewhat bimodal and BMI with a slight positive skew. Variables 'age' and 'avg_glucose_level' with observable difference in distribution in stroke vs. no stroke
+
+<p align="center"><img src="/output/combined_dist.png" width="900" align="middle"/></p> 
