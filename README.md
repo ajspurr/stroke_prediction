@@ -15,3 +15,7 @@ Highlights from Exploratory Data Analysis ([code](/stroke_EDA.py), [all figures]
 3. All continuous variables have somewhat normal or uniform distribution, 'avg_glucose_level' with a positive skew and somewhat bimodal and BMI with a slight positive skew. Variables 'age' and 'avg_glucose_level' with observable difference in distribution in stroke vs. no stroke
 
 <p align="center"><img src="/output/combined_dist.png" width="900" align="middle"/></p> 
+
+4. Calculated correlation between continuous variables, between categorical variables (Cramer's V), and between continuous and categorical (Correlation Ratio). Variables with correlation greater than 0.5 plotted below. None were greater than 0.7. 
+
+<p align="center"><img src="/output/combined_corr.png" width="900" align="middle"/></p> 
