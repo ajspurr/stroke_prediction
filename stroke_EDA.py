@@ -140,8 +140,8 @@ for col in cat_cols_w_target:
     plt.title(format_col(col) + ' Count')
     plt.ylabel('Count')
     plt.xlabel(format_col(col))
-    save_filename = 'counts_' + col
-    save_image(output_dir, save_filename, bbox_inches='tight')
+    #save_filename = 'counts_' + col
+    #save_image(output_dir, save_filename, bbox_inches='tight')
     plt.show()
     
 # Very few cases of stroke, hypertension, and heart disease. It will be interesting to see if they are correlated.
@@ -150,21 +150,7 @@ for col in cat_cols_w_target:
 # =============================
 # Combine into one figure
 # =============================
-# Create figure, gridspec, and 2d array of axes/subplots with given number of rows and columns
-# fig = plt.figure(constrained_layout=True, figsize=(16, 8))
-# num_rows = 2
-# num_cols = 4
-# ax_array = create_2d_array(num_rows, num_cols)
-# gs = fig.add_gridspec(num_rows, num_cols)
-
-# # Map each subplot/axis to gridspec location
-# for r in range(len(ax_array)):
-#     for c in range(len(ax_array[r])):
-#         ax_array[r][c] = fig.add_subplot(gs[r,c])
-
-# # Flatten 2d array of axis objects to iterate through easier
-# ax_array_flat = np.array(ax_array).flatten()
-
+# Create figure, gridspec, list of axes/subplots mapped to gridspec location
 fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=2, num_cols=4, figsize=(16, 8))
 
 # Loop through categorical variables, plotting each in the figure
@@ -202,8 +188,8 @@ for col in categorical_cols:
     sns.catplot(data=dataset, x=col, hue="stroke", kind="count", legend=False)
     plt.title('Stroke Count by ' + format_col(col))
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title='stroke')
-    save_filename = 'count_stroke_by_' + col
-    save_image(output_dir, save_filename)
+    #save_filename = 'count_stroke_by_' + col
+    #save_image(output_dir, save_filename)
     plt.show()
 # Not very helpful visualization as the number of records with stroke is very low
 
@@ -249,20 +235,20 @@ def boxplot_percentage(data, target, categorical_var):
     df_grouped = df_grouped.reset_index()
     
     # Plots figure with target as x-axis labels, each with a bar for each categorical variable
-    sns.barplot(x=df_grouped[target], y=df_grouped['percent_of_target_cat'], hue=df_grouped[categorical_var])
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title=categorical_var)
-    plt.title('Percent ' + format_col(categorical_var) + ' by Stroke')
-    plt.xlabel('Stroke')
-    plt.ylabel('Percent ' + format_col(categorical_var))
-    plt.show()
+    # sns.barplot(x=df_grouped[target], y=df_grouped['percent_of_target_cat'], hue=df_grouped[categorical_var])
+    # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title=categorical_var)
+    # plt.title('Percent ' + format_col(categorical_var) + ' by Stroke')
+    # plt.xlabel('Stroke')
+    # plt.ylabel('Percent ' + format_col(categorical_var))
+    # plt.show()
     
     # Plots figure with categorical variable as x-axis labels, each with a bar for each target variable
-    sns.barplot(x=df_grouped[categorical_var], y=df_grouped['percent_of_cat_var'], hue=df_grouped[target])
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title=target)
-    plt.title('Percent Stroke by ' + format_col(categorical_var))
-    plt.xlabel(format_col(categorical_var))
-    plt.ylabel('Percent Stroke')
-    plt.show()
+    # sns.barplot(x=df_grouped[categorical_var], y=df_grouped['percent_of_cat_var'], hue=df_grouped[target])
+    # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title=target)
+    # plt.title('Percent Stroke by ' + format_col(categorical_var))
+    # plt.xlabel(format_col(categorical_var))
+    # plt.ylabel('Percent Stroke')
+    # plt.show()
     
     # The above two figures are helpful in visualizing the complete picture, but contain some redundant information
     # Will simplify to just percent stroke in each category
@@ -270,8 +256,8 @@ def boxplot_percentage(data, target, categorical_var):
     plt.title('Percent Stroke by ' + format_col(categorical_var))
     plt.xlabel(format_col(categorical_var))
     plt.ylabel('Percent Stroke')
-    save_filename = 'perc_stroke_by_' + categorical_var
-    save_image(output_dir, save_filename)
+    #save_filename = 'perc_stroke_by_' + categorical_var
+    #save_image(output_dir, save_filename)
     plt.show()
     
 for cat_cols in categorical_cols:
