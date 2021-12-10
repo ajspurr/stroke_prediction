@@ -86,6 +86,10 @@ dataset['heart_disease'] = dataset['heart_disease'].map(heart_disease_dict)
 # Visualize data
 # =======================================================================================
 
+# ==========================================================
+# Functions and global variable creation
+# ==========================================================
+
 # Standardize image saving parameters
 def save_image(dir, filename, dpi=300, bbox_inches='tight'):
     plt.savefig(dir/filename, dpi=dpi, bbox_inches=bbox_inches)
@@ -108,6 +112,24 @@ def create_2d_array(num_rows, num_cols):
         matrix.append([0 for c in range(0, num_cols)])
     return matrix
 
+# Initialize figure, grid spec, axes variables
+def initialize_fig_gs_ax(num_rows, num_cols, figsize=(16, 8)):
+    # Create figure, gridspec, and 2d array of axes/subplots with given number of rows and columns
+    fig = plt.figure(constrained_layout=True, figsize=figsize)
+    ax_array = create_2d_array(num_rows, num_cols)
+    gs = fig.add_gridspec(num_rows, num_cols)
+
+    # Map each subplot/axis to gridspec location
+    for r in range(len(ax_array)):
+        for c in range(len(ax_array[r])):
+            ax_array[r][c] = fig.add_subplot(gs[r,c])
+
+    # Flatten 2d array of axis objects to iterate through easier
+    ax_array_flat = np.array(ax_array).flatten()
+    
+    return fig, gs, ax_array_flat
+
+
 # ==========================================================
 # Categorical variables
 # ==========================================================
@@ -129,19 +151,21 @@ for col in cat_cols_w_target:
 # Combine into one figure
 # =============================
 # Create figure, gridspec, and 2d array of axes/subplots with given number of rows and columns
-fig = plt.figure(constrained_layout=True, figsize=(16, 8))
-num_rows = 2
-num_cols = 4
-ax_array = create_2d_array(num_rows, num_cols)
-gs = fig.add_gridspec(num_rows, num_cols)
+# fig = plt.figure(constrained_layout=True, figsize=(16, 8))
+# num_rows = 2
+# num_cols = 4
+# ax_array = create_2d_array(num_rows, num_cols)
+# gs = fig.add_gridspec(num_rows, num_cols)
 
-# Map each subplot/axis to gridspec location
-for r in range(len(ax_array)):
-    for c in range(len(ax_array[r])):
-        ax_array[r][c] = fig.add_subplot(gs[r,c])
+# # Map each subplot/axis to gridspec location
+# for r in range(len(ax_array)):
+#     for c in range(len(ax_array[r])):
+#         ax_array[r][c] = fig.add_subplot(gs[r,c])
 
-# Flatten 2d array of axis objects to iterate through easier
-ax_array_flat = np.array(ax_array).flatten()
+# # Flatten 2d array of axis objects to iterate through easier
+# ax_array_flat = np.array(ax_array).flatten()
+
+fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=2, num_cols=4, figsize=(16, 8))
 
 # Loop through categorical variables, plotting each in the figure
 i = 0
