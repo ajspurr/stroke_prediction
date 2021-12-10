@@ -201,14 +201,13 @@ for col in categorical_cols:
 # A little better, but again, since number of strokes is so low, percentages may be better:
 
 
-# Function: boxplot_percentage()
+# Function: dataframe_percentages()
 # Parameters: data = dataframe representing the dataset, target = string representing column name of target variable, 
 #             categorical_var = string representing column name of categorical variable
-# Example: Target variable is binary variable 'stroke', categorical variable is 'smoking_status' which has 4 possible values
-# This will create two boxplots. The first will have 'stroke' on the x-axis, subdivided by 'smoking_status' category.
-# Within 'stroke' group, will display the percentage of records of each smoking status. The second graph reverses the 
-# categorical and target variable.
-def boxplot_percentage(data, target, categorical_var):
+# Example: 'target' is stroke, 'categorical_var' is gender
+#           Will calculate percentage of females who had stroke, percentage of females who didn't. Do this for each gender
+#           Will calculate percentage of those with stroke who are female, how many without stroke are female. Do this for each gender 
+def dataframe_percentages(data, target, categorical_var):
     # Create multi-index dataframe with primary index as the target, secondary index as categorical variable
     df_grouped = data.groupby([target, categorical_var])[categorical_var].count().to_frame()
     df_grouped = df_grouped.rename(columns = {categorical_var:'count'})
@@ -219,7 +218,7 @@ def boxplot_percentage(data, target, categorical_var):
 
     # Add column which represents the categorical variable count as a percentage of target variable
     # (stroke vs. not stroke). I used range() to give them unique values for debugging purposes
-    df_grouped['percent_of_target_cat'] = range(len(df_grouped))
+    df_grouped['perc_of_target_cat'] = range(len(df_grouped))
     
     # Add column which represents the target variable count as a percentage of categorical variable
     df_grouped['percent_of_cat_var'] = range(len(df_grouped))
@@ -227,15 +226,23 @@ def boxplot_percentage(data, target, categorical_var):
     # Loop through multi-index dataframe, giving the new columns they're appropriate values
     for target_value in df_grouped.index.levels[0]:
         for categorical_var_value in df_grouped.index.levels[1]:
-            df_grouped.loc[(target_value, categorical_var_value), 'percent_of_target_cat'] = (df_grouped.loc[(target_value, categorical_var_value), 'count'] / df_grouped.loc[(target_value, slice(None)), :]['count'].sum()) * 100
+            df_grouped.loc[(target_value, categorical_var_value), 'perc_of_target_cat'] = (df_grouped.loc[(target_value, categorical_var_value), 'count'] / df_grouped.loc[(target_value, slice(None)), :]['count'].sum()) * 100
             df_grouped.loc[(target_value, categorical_var_value), 'percent_of_cat_var'] = (df_grouped.loc[(target_value, categorical_var_value), 'count'] / df_grouped.loc[(slice(None), categorical_var_value), :]['count'].sum()) * 100
 
     # Convert from multi-index dataframe to two columns with those index values 
     # This will add columns for target and categorical variable value, as it makes it easier to create a boxplot
-    df_grouped = df_grouped.reset_index()
-    
+    return df_grouped.reset_index()
+
+# Parameters: df_grouped = the  dataframe created with dataframe_percentages(), target = string representing column name of target variable, 
+#             categorical_var = string representing column name of categorical variable
+# Plots data in three different ways:
+# Example: Target variable is binary variable 'stroke', categorical variable is 'gender'
+# This will create three boxplots. The first will have 'stroke' on the x-axis, subdivided by 'gender' category.
+# Within 'stroke' group, will display the percentage of records of gender. The second graph reverses the 
+# categorical and target variable. The third graph plots the percentage of each gender who had a stroke
+def plot_percentages(df_grouped, target, categorical_var):    
     # Plots figure with target as x-axis labels, each with a bar for each categorical variable
-    # sns.barplot(x=df_grouped[target], y=df_grouped['percent_of_target_cat'], hue=df_grouped[categorical_var])
+    # sns.barplot(x=df_grouped[target], y=df_grouped['perc_of_target_cat'], hue=df_grouped[categorical_var])
     # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title=categorical_var)
     # plt.title('Percent ' + format_col(categorical_var) + ' by Stroke')
     # plt.xlabel('Stroke')
@@ -252,7 +259,7 @@ def boxplot_percentage(data, target, categorical_var):
     
     # The above two figures are helpful in visualizing the complete picture, but contain some redundant information
     # Will simplify to just percent stroke in each category
-    sns.barplot(x=df_grouped[categorical_var], y=df_grouped[(df_grouped['stroke']==1)]['percent_of_cat_var'])
+    sns.barplot(x=df_grouped[categorical_var], y=df_grouped[(df_grouped[target_var]==1)]['percent_of_cat_var'])
     plt.title('Percent Stroke by ' + format_col(categorical_var))
     plt.xlabel(format_col(categorical_var))
     plt.ylabel('Percent Stroke')
@@ -261,7 +268,16 @@ def boxplot_percentage(data, target, categorical_var):
     plt.show()
     
 for cat_cols in categorical_cols:
-    boxplot_percentage(dataset, 'stroke', cat_cols)
+    target_var = 'stroke'
+    # See function description above
+    df_grouped = dataframe_percentages(dataset, target_var, cat_cols)
+    # See function description above
+    plot_percentages(df_grouped, target_var, cat_cols)
+
+# =============================
+# Combine percent stroke by category graphs into one figure
+# =============================
+
 
 # ==========================================================
 # Continuous variables
