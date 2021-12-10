@@ -175,8 +175,8 @@ for col in cat_cols_w_target:
 # Finalize figure formatting and export
 fig.suptitle('Categorical Variable Counts', fontsize=24)
 fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
-save_filename = 'combined_cat_counts'
-save_image(output_dir, save_filename, bbox_inches='tight')
+#save_filename = 'combined_cat_counts'
+#save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 
@@ -362,17 +362,11 @@ for col in numerical_cols:
     axis2.set_xlabel(format_col(col))
     axis2.legend()
     
-    
-    
-    # Rotate x-axis tick labels so they don't overlap
-    # plt.setp(axis.get_xticklabels(), rotation=30, horizontalalignment='right')
-    
-    # # Only want to label the y-axis on the first subplot of each row
-    # if i % 4 == 0:
-    #     axis.set_ylabel('Percent Stroke')
-    # else:
-    #     # set visibility of y-axis as False
-    #     axis.set_ylabel('')
+    # Only want to label the y-axis on the first subplot of each row
+    if i != 0:
+        # set visibility of y-axis as False
+        axis.set_ylabel('')
+        axis2.set_ylabel('')
     i += 1
 
 # Finalize figure formatting and export
@@ -385,6 +379,7 @@ plt.show()
 # =======================================================================================
 # Correlation between variables
 # =======================================================================================
+
 # ==========================================================
 # Correlation between continuous variables
 # ==========================================================
@@ -399,8 +394,8 @@ plt.show()
 # represents the more extreme values
 sns.heatmap(dataset[numerical_cols].corr(), annot=True, linewidth=.8, cmap="Blues", vmin=0, vmax=1)
 plt.title('Correlation Between Continuous Variables')
-save_filename = 'correlation_cont_variables'
-save_image(output_dir, save_filename)  
+#save_filename = 'correlation_cont_variables'
+#save_image(output_dir, save_filename)  
 plt.show()
 
 # Age has the highest correlation with other continuous variables
@@ -415,8 +410,8 @@ plt.show()
 
 sns.lineplot(data=dataset, x='age', y='bmi')
 plt.title('Relationship Between Age and BMI')
-save_filename = 'correlation_age_bmi'
-save_image(output_dir, save_filename)  
+#save_filename = 'correlation_age_bmi'
+#save_image(output_dir, save_filename)  
 plt.show()
 
 sns.scatterplot(data=dataset, x='age', y='avg_glucose_level')
@@ -424,8 +419,8 @@ plt.show()
 
 sns.lineplot(data=dataset, x='age', y='avg_glucose_level')
 plt.title('Relationship Between Age and Avg Glucose Level')
-save_filename = 'correlation_age_avg_glucose_level'
-save_image(output_dir, save_filename)  
+#save_filename = 'correlation_age_avg_glucose_level'
+#save_image(output_dir, save_filename)  
 plt.show()
 
 # ==========================================================
@@ -459,8 +454,8 @@ cramers_df = cramers_df.apply(pd.to_numeric)
 # Output results as heatmap
 sns.heatmap(cramers_df, annot=True, linewidth=.8, cmap="Blues", vmin=0, vmax=1)
 plt.title("Association Between Categorical Variables (Cramér's V)")
-save_filename = 'correlation_cat_variables'
-save_image(output_dir, save_filename)  
+#save_filename = 'correlation_cat_variables'
+#save_image(output_dir, save_filename)  
 plt.show()
 
 # =============================
@@ -477,8 +472,8 @@ for col in range(len(cramers_df.columns)-1):
             sns.catplot(data=dataset, x=column_name, hue=row_name, kind="count", legend=False)
             plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0, title=row_name)
             plt.title(format_col(column_name) + ' vs. ' + format_col(row_name) + " (Cramer's=" + str(cramers_value) + ')')
-            save_filename = 'compare_' + column_name + '_vs_' + row_name
-            save_image(output_dir, save_filename)
+            #save_filename = 'compare_' + column_name + '_vs_' + row_name
+            #save_image(output_dir, save_filename)
             plt.show()
 
 # ==========================================================
@@ -525,8 +520,8 @@ corr_ratio_df = corr_ratio_df.apply(pd.to_numeric)
 # Output results as heatmap
 sns.heatmap(corr_ratio_df, annot=True, linewidth=.8, cmap="Blues", vmin=0, vmax=1)
 plt.title("Correlation Ratio Between Numerical and Categorical Variables")
-save_filename = 'correlation_cat_num_variables'
-save_image(output_dir, save_filename)  
+#save_filename = 'correlation_cat_num_variables'
+#save_image(output_dir, save_filename)  
 plt.show()
 
 # =============================
@@ -539,13 +534,77 @@ for col in corr_ratio_df.columns:
         if corr_value > 0.3:
             sns.boxplot(data=dataset, x=row, y=col)
             plt.title(format_col(col) + ' vs. ' + format_col(row) + ' (Corr Ratio=' + str(corr_value) + ')')
-            save_filename = 'relationship_' + col + '_' + row
-            save_image(output_dir, save_filename)  
+            #save_filename = 'relationship_' + col + '_' + row
+            #save_image(output_dir, save_filename)  
             plt.show()
 
+
 # =============================
+# Combine correlation graphs into one figure
+# =============================
+
+# Create figure, gridspec, list of axes/subplots mapped to gridspec location
+fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=3, figsize=(16, 8))
+
+# Correlation between continuous variables
+axis=ax_array_flat[0]
+sns.heatmap(dataset[numerical_cols].corr(), annot=True, linewidth=.8, cmap="Blues", vmin=0, vmax=1, cbar=False, ax=axis)
+axis.set_title('Correlation Between Continuous Variables')
+
+# Association between categorical variables
+axis=ax_array_flat[1]
+sns.heatmap(cramers_df, annot=True, linewidth=.8, cmap="Blues", vmin=0, vmax=1, cbar=False, ax=axis)
+axis.set_title("Association Between Categorical Variables (Cramér's V)")
+
+# Correlation between continuous and categorical variables
+axis=ax_array_flat[2]
+sns.heatmap(corr_ratio_df, annot=True, linewidth=.8, cmap="Blues", vmin=0, vmax=1, ax=axis)
+axis.set_title("Correlation Ratio Between Numerical and Categorical Variables")
+
+# Finalize figure formatting and export
+fig.suptitle('Feature Correlation', fontsize=24, y=1.08) # y=1.08 increases space below figure title
+#fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
+save_filename = 'combined_corr'
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
+
+
+# Combine three plots of variables with correlation > 0.5
+# Create figure, gridspec, list of axes/subplots mapped to gridspec location
+fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=3, figsize=(16, 8))
+
+# Work_type vs. ever_married
+axis=ax_array_flat[0]
+sns.catplot(data=dataset, x='ever_married', hue='work_type', kind="count", ax=axis)#, legend=False, )
+#axis.legend(bbox_to_anchor=(1.05, 1), borderaxespad=0, title='Work Type')#, loc='upper left')
+axis.set_ylabel('Count')
+axis.set_xlabel('Ever Married')
+axis.set_title("Ever Married vs. Work Type (Cramer's=0.57)")
+
+# Ever_married vs. age
+axis=ax_array_flat[1]
+sns.boxplot(data=dataset, x='ever_married', y='age', ax=axis)
+axis.set_ylabel('Age')
+axis.set_xlabel('Ever Married')
+axis.set_title("Ever Married vs. Age (Corr ratio=0.68)")
+
+# Work_type vs. age
+axis=ax_array_flat[2]
+sns.boxplot(data=dataset, x='work_type', y='age', ax=axis)
+axis.set_ylabel('Age')
+axis.set_xlabel('Work Type')
+axis.set_title("Work Type vs. Age (Corr ratio=0.68)")
+
+# Finalize figure formatting and export
+fig.suptitle('Feature Correlation Details', fontsize=24)
+#fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
+save_filename = 'combined_corr_details'
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
+
+# ==========================================================
 # Cumulative Risk of stroke by age
-# =============================
+# ==========================================================
 stroke_rates = []
 
 dataset['age'].min()
@@ -576,17 +635,9 @@ sns.lineplot(data=stroke_rates)
 plt.xlabel('Age')
 plt.ylabel('Cumulative Stroke Risk')
 plt.title('Cumulative Stroke Risk vs. Age')
-save_filename = 'cumulative_stroke_risk_vs_age'
-save_image(output_dir, save_filename)  
+#save_filename = 'cumulative_stroke_risk_vs_age'
+#save_image(output_dir, save_filename)  
 plt.show()
-
-
-
-
-
-
-
-
 
 
 
