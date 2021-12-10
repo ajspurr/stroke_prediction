@@ -277,7 +277,39 @@ for cat_cols in categorical_cols:
 # =============================
 # Combine percent stroke by category graphs into one figure
 # =============================
+# Create figure, gridspec, list of axes/subplots mapped to gridspec location
+fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=2, num_cols=4, figsize=(16, 8))
 
+# Loop through categorical variables, plotting each in the figure
+i = 0
+for cat_cols in categorical_cols:
+    target_var = 'stroke'
+    # See function description above
+    df_grouped = dataframe_percentages(dataset, target_var, cat_cols)
+
+    axis = ax_array_flat[i]
+    sns.barplot(x=df_grouped[cat_cols], y=df_grouped[(df_grouped[target_var]==1)]['percent_of_cat_var'], ax=axis)
+    axis.set_title('Percent Stroke by ' + format_col(cat_cols))
+    axis.set_xlabel(format_col(cat_cols))
+    
+    # Rotate x-axis tick labels so they don't overlap
+    plt.setp(axis.get_xticklabels(), rotation=30, horizontalalignment='right')
+    
+    # Only want to label the y-axis on the first subplot of each row
+    if i % 4 == 0:
+        axis.set_ylabel('Percent Stroke')
+    else:
+        # set visibility of y-axis as False
+        axis.set_ylabel('')
+    i += 1
+
+# Finalize figure formatting and export
+fig.suptitle('Percent Stroke by Categorical Variable', fontsize=24)
+fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
+fig.delaxes(ax_array_flat[7])# Remove empty 8th subplot
+save_filename = 'combined_perc_stroke'
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
 
 # ==========================================================
 # Continuous variables
