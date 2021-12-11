@@ -4,7 +4,7 @@ Exploratory data analysis, data preprocessing, model training, parameter tuning,
 ## EDA
 Highlights from Exploratory Data Analysis <br>Full code: [stroke_EDA.py](/stroke_EDA.py) <br> All figures: [Stroke-Prediction/output](/output)
 
-1. Visualization of categorical features below. Notably, the target variable (stroke) is highly imbalanced. 
+1. Visualization of categorical variables below. Notably, the target variable (stroke) is highly imbalanced. 
 
 <p align="center"><img src="/output/combined_cat_counts.png" width="900"/></p>
 
@@ -12,11 +12,11 @@ Highlights from Exploratory Data Analysis <br>Full code: [stroke_EDA.py](/stroke
 
 <p align="center"><img src="/output/combined_perc_stroke.png" width="900"/></p> 
 
-3. All continuous features have somewhat normal or uniform distribution, 'avg_glucose_level' with a positive skew and somewhat bimodal and BMI with a slight positive skew. Features 'age' and 'avg_glucose_level' with observable difference in distribution in stroke vs. no stroke
+3. All continuous variables have somewhat normal or uniform distribution, 'avg_glucose_level' with a positive skew and somewhat bimodal and BMI with a slight positive skew. Features 'age' and 'avg_glucose_level' with observable difference in distribution in stroke vs. no stroke
 
 <p align="center"><img src="/output/combined_dist.png" width="900"/></p> 
 
-4. Calculated correlation between continuous features, between categorical features (Cramer's V), and between continuous and categorical (Correlation Ratio). Feature pairs with correlation greater than 0.5 plotted below heatmaps. No correlations greater than 0.7. 
+4. Calculated correlation between continuous variables, between categorical variables (Cramer's V), and between continuous and categorical (Correlation Ratio). Variable pairs with correlation greater than 0.5 plotted below heatmaps. No correlations greater than 0.7. 
 
 <p align="center"><img src="/output/combined_corr.png" width="900"/></p> 
 
