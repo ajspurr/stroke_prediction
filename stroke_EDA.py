@@ -5,17 +5,13 @@ from os import chdir
 from pathlib import PureWindowsPath, Path
 import seaborn as sns 
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 from sklearn.impute import SimpleImputer
-
 
 # Read in data
 project_dir = PureWindowsPath(r"D:\GitHubProjects\Stroke-Prediction\\")
 chdir(project_dir)
 dataset = pd.read_csv('./input/stroke-data.csv', index_col='id')
 output_dir = Path(project_dir, Path('./output'))
-
-
 
 # ====================================================================================================================
 # EXPLORATORY DATA ANALYSIS
@@ -48,14 +44,11 @@ print(dataset['stroke'].isnull().sum())
 # =============================
 # Explore features
 # =============================
-# Total missing values in each column 
-col_missing_values = dataset.isnull().sum().to_frame()
-col_missing_values = col_missing_values.rename(columns = {0:'missing_values'})
-
-# Calculate percent missing in each column
-col_missing_values['percent_missing'] = (col_missing_values['missing_values'] / len(dataset.index)) * 100
-print("\nMISSING VALUES:")
-print(col_missing_values)
+feature_summary = pd.DataFrame()
+feature_summary['dtype'] = dataset.dtypes
+feature_summary['unique_values'] = dataset.nunique()
+feature_summary['missing_values'] = dataset.isnull().sum()
+feature_summary['percent_missing'] = round((feature_summary['missing_values'] / len(dataset.index)) * 100, 2)
 
 # Column 'bmi'  missing 201 values, about 4% of the total, will address later
 
@@ -544,7 +537,7 @@ for col in corr_ratio_df.columns:
 # =============================
 
 # Create figure, gridspec, list of axes/subplots mapped to gridspec location
-fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=3, figsize=(16, 8))
+fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=3, figsize=(16, 6))
 
 # Correlation between continuous variables
 axis=ax_array_flat[0]
@@ -571,7 +564,7 @@ plt.show()
 
 # Include three plots of variables with correlation > 0.5
 # Create figure, gridspec, list of axes/subplots mapped to gridspec location
-fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=3)#, figsize=(16, 8))
+fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=3, figsize=(16, 6))
 
 # Ever_married vs. age
 axis=ax_array_flat[0]
@@ -590,7 +583,6 @@ axis.set_xlabel('Work Type')
 axis.set_title("Work Type vs. Age (Corr ratio=0.68)")
 
 # Work_type vs. ever_married
-# sns.catplot(data=dataset, x='ever_married', hue='work_type', kind="count", legend=False)#, ax=axis)
 axis=ax_array_flat[2]
 sns.countplot(data=dataset, x='ever_married', hue='work_type', ax=axis)#, legend=False)
 #plt.legend(bbox_to_anchor=(1.05, 1), borderaxespad=0, title='Work Type')#, loc='upper left')
