@@ -14,7 +14,7 @@ dataset = pd.read_csv('./input/stroke-data.csv', index_col='id')
 output_dir = Path(project_dir, Path('./output/eda'))
 
 # ====================================================================================================================
-# EXPLORATORY DATA ANALYSIS
+# EXPLORATORY DATA ANALYSIS 
 # ====================================================================================================================
 print("\nDATASET SHAPE:")
 print(dataset.shape)
