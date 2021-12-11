@@ -16,8 +16,8 @@ Highlights from Exploratory Data Analysis ([code](/stroke_EDA.py), [all figures]
 
 <p align="center"><img src="/output/combined_dist.png" width="900"/></p> 
 
-4. Calculated correlation between continuous variables, between categorical variables (Cramer's V), and between continuous and categorical (Correlation Ratio). Variables with correlation greater than 0.5 plotted below heatmaps. No correlations greater than 0.7. 
+4. Calculated correlation between continuous variables, between categorical variables (Cramer's V), and between continuous and categorical (Correlation Ratio). Variable pairs with correlation greater than 0.5 plotted below heatmaps. No correlations greater than 0.7. 
 
 <p align="center"><img src="/output/combined_corr.png" width="900"/></p> 
 
-<p align="center"><img src="/output/combined_corr_details.png" width="600"/><img src="/output/combined_corr_details_2.png" width="300"/></p> 
+<p align="center"><img src="/output/combined_corr_details.png" width="900"/></p> 
