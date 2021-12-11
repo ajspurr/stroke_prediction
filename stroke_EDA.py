@@ -50,6 +50,11 @@ feature_summary['unique_values'] = dataset.nunique()
 feature_summary['missing_values'] = dataset.isnull().sum()
 feature_summary['percent_missing'] = round((feature_summary['missing_values'] / len(dataset.index)) * 100, 2)
 
+print("\nDATASET SHAPE:")
+print(dataset.shape)
+print('\nFEATURE SUMMARY')
+print(feature_summary)
+
 # Column 'bmi'  missing 201 values, about 4% of the total, will address later
 
 # Separate categorical and numerical features
