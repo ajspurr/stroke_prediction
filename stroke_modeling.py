@@ -6,32 +6,30 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from sklearn.pipeline import Pipeline
-from imblearn.pipeline import Pipeline as Pipeline_imb
-from sklearn import preprocessing
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder
 from imblearn.over_sampling import SMOTE
+from imblearn.pipeline import Pipeline as Pipeline_imb
 
-from sklearn.model_selection import train_test_split,cross_val_score
-from sklearn.model_selection import GridSearchCV
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from xgboost import XGBClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.svm import SVC
+from xgboost import XGBClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import GradientBoostingClassifier
 
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split,cross_val_score
+
+from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.metrics import auc, average_precision_score
-from sklearn.metrics import f1_score
-
 
 # Read in data
 project_dir = PureWindowsPath(r"D:\GitHubProjects\stroke_prediction\\")
@@ -90,7 +88,7 @@ def create_pipeline(model_name, model, use_SMOTE):
     ])
     
     if (use_SMOTE):
-        # Bundle preprocessor then SMOTE then model
+        # Bundle preprocessor, SMOTE, model
         oversample = SMOTE()
         my_pipeline = Pipeline_imb([
             ('preprocessor', preprocessor),
@@ -98,7 +96,7 @@ def create_pipeline(model_name, model, use_SMOTE):
             (model_name, model)
         ]) 
     else:
-        # Bundle preprocessor then model
+        # Bundle preprocessor and model
         my_pipeline = Pipeline_imb([
             ('preprocessor', preprocessor),
             (model_name, model)
@@ -109,12 +107,15 @@ def create_pipeline(model_name, model, use_SMOTE):
 # Model evaluation function
 # ====================================================================================================================
 def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model, model_name, create_graphs=True):  
+    # =============================
     # Accuracy
+    # =============================
     accuracy = accuracy_score(y_valid, y_pred)
      
-    # Confusion matrix heatmap
-    # Includes counts and percetage of true outcome (so can compare performance in positive and negative cases)
-    # Color based on percentage
+    # =============================
+    # Confusion matrix heatmap: includes counts and percetage of true outcome, so can
+    # compare performance in positive and negative cases (color based on percentage)
+    # =============================
     conmat = confusion_matrix(y_valid, y_pred)
     conmat_df = pd.DataFrame(conmat)
     # Create new confusion matrix converting the count to a percentage of true outcome
@@ -136,11 +137,17 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
         plt.title(f'Confusion Matrix ({model_name})')
         plt.show() 
     
+    # =============================
     # ROC, AUC
+    # =============================
+    # Rather than predict positive or negative outcome, calculate probability of outcome being positive
     y_probs = pipeline_or_model.predict_proba(X_valid)
     y_probs = y_probs[:, 1]
+    
+    # Calculate False Positive Rates and True Positive Rates for predictions with score >= thresholds[i]
     fpr, tpr, roc_thresholds = roc_curve(y_valid, y_probs)
     
+    # Calculate AUC for ROC
     AUC = roc_auc_score(y_valid, y_probs)
     
     # Plot ROC
@@ -156,8 +163,13 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
         plt.text(0.95, 0.05, f'AUC = {AUC:.2f}', ha='right', fontsize=12, weight='bold', color='blue')
         plt.show()
     
+    # =============================
     # Precision, recall, PRC, AUPRC
+    # =============================
+    # Calculate precision, recall for each threshold 
     precision, recall, prc_thresholds = precision_recall_curve(y_valid, y_probs)
+    
+    # Calculate average presicion and AUC or PRC, which should be the same
     average_precision = average_precision_score(y_valid, y_probs)
     AUPRC = auc(recall, precision)
     
@@ -174,7 +186,6 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
         plt.legend()
         plt.show()
     
-    if (create_graphs):
         # Plot precision and recall for each threshold
         plt.plot(prc_thresholds, precision[:-1], label='Precision',c='orange')
         plt.plot(prc_thresholds, recall[:-1],label='Recall',c='b')
@@ -184,11 +195,15 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
         plt.legend()
         plt.ylim([0,1])
         plt.show()
-    
+        
+    # =============================
     # F1 score
+    # =============================
     f1 = f1_score(y_valid, y_pred)
     
+    # =============================
     # Calculate other metrics commonly used in biomedical research
+    # =============================
     TN, FP, FN, TP = list(map(float, counts))
     sensitivity = TP / (TP+FN) # Same as recall
     specificity = TN / (TN+FP)
@@ -200,7 +215,9 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     NPV = TN / (TN+FN)
     f1_manual = (2*TP) / ((2*TP) + FP + FN)
     
-    # Figure out what threshold it being used for the above metrics
+    # =============================
+    # Determine out what threshold it being used for the above metrics (specifically precision)
+    # =============================
     # Combine corresponding thresholds, precisions, recalls into one dataframe
     # Technically precision and recall dataframes have one more value than thresholds df,
     # so the last value is just not included in the combination
@@ -210,7 +227,9 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     target_rows = combined_df.loc[(combined_df['precision'] > (PPV-0.00001)) & (combined_df['precision'] < (PPV+0.00001))]
     possible_thresholds = list(target_rows['threshold'])
     
+    # =============================
     # Model performance metrics to be returned by this function
+    # =============================
     metrics = {}
     metrics['Accuracy'] = np.round(accuracy, 4)
     metrics['Sensitivity (recall)'] = np.round(sensitivity, 4)
@@ -224,11 +243,10 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     metrics['F1 (manual)'] = np.round(f1_manual, 4)
     metrics['Possible thresholds used'] = possible_thresholds
     
-    
     return metrics, conmat_df
 
 # ====================================================================================================================
-# Evaluate Logistic Regression in detail
+# Test my functions by fitting and evaluating Logistic Regression model, compare results with and without SMOTE preprocessing
 # ====================================================================================================================
 
 # Separate target from predictors
@@ -236,25 +254,50 @@ y = new_df['stroke']
 X = new_df.drop(['stroke'], axis=1)
 
 # Divide data into training and validation subsets
-X_train, X_valid, y_train, y_valid = train_test_split(X, y, train_size=0.8, test_size=0.2, random_state=0)
+X_train, X_valid, y_train, y_valid = train_test_split(X, y, train_size=0.8, test_size=0.2, random_state=15)
 
+# =============================
+# Not using SMOTE
+# =============================
 # Preprocessing of training data and fit model
-my_pipeline = create_pipeline('Log Reg', LogisticRegression(random_state=15))
+my_pipeline = create_pipeline('Log Reg', LogisticRegression(random_state=15), use_SMOTE=False)
 fit = my_pipeline.fit(X_train, y_train)
 
-# Get predictions
+# Make predictions
 y_pred = my_pipeline.predict(X_valid)
 
+# Evaluate model
 results, conmat = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, my_pipeline, 'Log Reg')
+
+# =============================
+# Using SMOTE
+# =============================
+# Preprocessing of training data and fit model
+my_pipeline_smote = create_pipeline('Log Reg', LogisticRegression(random_state=15), use_SMOTE=True)
+fit_smote = my_pipeline_smote.fit(X_train, y_train)
+
+# Make predictions
+y_pred_smote = my_pipeline_smote.predict(X_valid)
+
+# Evaluate model
+results_smote, conmat_smote = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_smote, my_pipeline_smote, 'Log Reg')
+
+# =============================
+# Compare SMOTE vs. not
+# =============================
+
+
 
 # ====================================================================================================================
 # Evaluate multiple models using cross validation scores (f1)
 # ====================================================================================================================
 
-# Creating a dictionary of models, keeping track of their pipelines and performance
+# =============================
+# Create a dictionary of models, keeping track of their pipelines and performance
+# =============================
 model_names = ['Logistic Regression', 'Decision Tree', 'Random Forest', 'SVM', 'Gradient Boosting', 'XGBoost', 'KNN']
 
-# Each dictionary key is the model name
+# The dictionary keys are the model names
 models_dict = dict.fromkeys(model_names, None)
 
 # The value of each item is another dictionary of model information
@@ -262,7 +305,10 @@ model_information_keys = ['Model', 'Pipeline', 'Predictions', 'CV Scores (f1)', 
 for key in models_dict.keys():
     models_dict[key] = dict.fromkeys(model_information_keys, None)
 
-# Create the actual model objects and add to dictionary
+# =============================
+# Create and evaluate models, storing everything in dictionary created above
+# =============================
+# Create the model objects and add to dictionary
 models_dict['Logistic Regression']['Model'] = LogisticRegression(random_state=15)
 models_dict['Decision Tree']['Model'] = DecisionTreeClassifier(random_state=15)
 models_dict['Random Forest']['Model'] = RandomForestClassifier(random_state=15)
@@ -275,10 +321,11 @@ models_dict['KNN']['Model'] = KNeighborsClassifier()
 for key in models_dict.keys():
     models_dict[key]['Pipeline'] = create_pipeline(key, models_dict[key]['Model'], use_SMOTE=True)
 
-# Performing cross validation for each model
+# Perform cross validation (f1 score) for each model
 for key in models_dict.keys():
     models_dict[key]['CV Scores (f1)'] = cross_val_score(models_dict[key]['Pipeline'], X, y, cv=10, scoring='f1')
 
+# Perform cross validation (recall) for each model
 for key in models_dict.keys():
     models_dict[key]['CV Scores (recall)'] = cross_val_score(models_dict[key]['Pipeline'], X, y, cv=10, scoring='recall')
 
@@ -413,11 +460,9 @@ print("Mean recall CV score:" + str(np.round(new_LR_cv_recall.mean(), 4)))
 # Hyperparameter tuning SVM
 # ==========================================================
 
-
 #grid = GridSearchCV(svm, param_grid, refit = True, verbose =0,cv=10)
 
-
-# Logistic regression
+# SVM
 estimator = SVC(random_state=15, probability=True)
 estimator_pipe = create_pipeline('SVM', estimator, use_SMOTE=True)
 parameters = {'SVM__C': [0.1, 1, 10, 100, 1000], 
@@ -441,7 +486,7 @@ new_SVM_cv_recall = cross_val_score(new_SVM_pipeline, X, y, cv=10, scoring='reca
 print("Mean f1 CV score:" + str(np.round(new_SVM_cv_f1.mean(), 4)))
 print("Mean recall CV score:" + str(np.round(new_SVM_cv_recall.mean(), 4)))
 
-# Recall (CV) highly improved from 0.47 to ~0.79, other metrics similar to before
+# Recall (cross val) highly improved from 0.47 to ~0.79, other metrics similar to before
 
 
 
