@@ -2,7 +2,7 @@
 Exploratory data analysis, data preprocessing, model training, parameter tuning, stroke prediction, and model evaluation using Kaggle stroke dataset: https://www.kaggle.com/fedesoriano/stroke-prediction-dataset
 
 ## EDA
-Highlights from Exploratory Data Analysis <br>Full code: [stroke_EDA.py](/stroke_EDA.py) <br> All figures: [Stroke-Prediction/output/eda](/output/eda)
+Highlights from Exploratory Data Analysis <br>Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [Stroke-Prediction/output/eda](/output/eda)
 
 1. Basic data exploration. Dataset has 5110 rows and 11 columns, a mix of numerical and categorical data types, and minimal missing data. 
 
