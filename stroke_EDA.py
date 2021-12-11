@@ -569,36 +569,44 @@ save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 
-# Combine three plots of variables with correlation > 0.5
+# Include three plots of variables with correlation > 0.5
 # Create figure, gridspec, list of axes/subplots mapped to gridspec location
-fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=3, figsize=(16, 8))
-
-# Work_type vs. ever_married
-axis=ax_array_flat[0]
-sns.catplot(data=dataset, x='ever_married', hue='work_type', kind="count", ax=axis)#, legend=False, )
-#axis.legend(bbox_to_anchor=(1.05, 1), borderaxespad=0, title='Work Type')#, loc='upper left')
-axis.set_ylabel('Count')
-axis.set_xlabel('Ever Married')
-axis.set_title("Ever Married vs. Work Type (Cramer's=0.57)")
+fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=2, figsize=(10, 5))
 
 # Ever_married vs. age
-axis=ax_array_flat[1]
+axis=ax_array_flat[0]
 sns.boxplot(data=dataset, x='ever_married', y='age', ax=axis)
 axis.set_ylabel('Age')
 axis.set_xlabel('Ever Married')
+#axis.xaxis.get_label().set_fontsize(12)
 axis.set_title("Ever Married vs. Age (Corr ratio=0.68)")
 
 # Work_type vs. age
-axis=ax_array_flat[2]
+axis=ax_array_flat[1]
 sns.boxplot(data=dataset, x='work_type', y='age', ax=axis)
 axis.set_ylabel('Age')
 axis.set_xlabel('Work Type')
+#axis.xaxis.get_label().set_fontsize(12)
 axis.set_title("Work Type vs. Age (Corr ratio=0.68)")
 
 # Finalize figure formatting and export
 fig.suptitle('Feature Correlation Details', fontsize=24)
-#fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
+fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
 save_filename = 'combined_corr_details'
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
+
+
+# Seaborn catplot is a figure-level interface, not an axes-level interface 
+# so it can't be added to a figure, will create separately
+
+# Work_type vs. ever_married
+sns.catplot(data=dataset, x='ever_married', hue='work_type', kind="count", ax=axis, legend=False)
+plt.legend(bbox_to_anchor=(1.05, 1), borderaxespad=0, title='Work Type', loc='upper left')
+plt.ylabel('Count')
+plt.xlabel('Ever Married')
+plt.title("Ever Married vs. Work Type (Cramer's=0.57)")
+save_filename = 'combined_corr_details_2'
 save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
