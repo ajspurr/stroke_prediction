@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.impute import SimpleImputer
 
 # Read in data
-project_dir = PureWindowsPath(r"D:\GitHubProjects\Stroke-Prediction\\")
+project_dir = PureWindowsPath(r"D:\GitHubProjects\stroke_prediction\\")
 chdir(project_dir)
 dataset = pd.read_csv('./input/stroke-data.csv', index_col='id')
 output_dir = Path(project_dir, Path('./output/eda'))
