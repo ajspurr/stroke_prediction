@@ -12,7 +12,7 @@ Highlights from Exploratory Data Analysis <br>Full code: [stroke_eda.py](/stroke
 
 <p align="center"><img src="/output/eda/combined_cat_counts.png" width="900"/></p>
 <br>
-3. Stroke prevalence noticeably higher in those with hypertension, heart disease, and who have ever been married. Noticeably lower in children
+3. Stroke prevalence noticeably higher in those with hypertension, heart disease, and who have ever been married. Noticeably lower in children and individuals who have never worked.
 
 <p align="center"><img src="/output/eda/combined_perc_stroke.png" width="900"/></p> 
 <br>
@@ -25,3 +25,19 @@ Highlights from Exploratory Data Analysis <br>Full code: [stroke_eda.py](/stroke
 <p align="center"><img src="/output/eda/combined_corr.png" width="900"/></p> 
 
 <p align="center"><img src="/output/eda/combined_corr_details.png" width="900"/></p> 
+
+## Data Preparation
+#### Missing Data
+As noted above, 4% of BMI data missing. As these values are missing because they weren't recorded (as opposed to being values that don't exist) they can be imputed. I do not want to remove the rows completely and lose 4% of the data. I do not want to remove the entire column as BMI is likely helpful in predicting stroke. Will use sklearn SimpleImputer to replace missing data with mean BMI.
+
+#### Scaling
+Will scale continuous variables using sklearn StandardScaler.
+
+#### Categorical Variable Encoding
+Ordinal encoding not useful as categorical are not ordinal. One-hot encoding is appropriate, especially since all features have low cardinality, so it won't need to create 10s or 100s of new columns. 
+
+#### Data Cleaning
+Fortunately, data was well-formatted. Replaced 0s and 1s in 'hypertension' and 'heart_disease' columns with more descriptive string so that one-hot encoded columns are easier to interpret. 
+
+#### Feature Engineering
+Did not find obvious opportunities for feature engineering, but can explore this in the future.
