@@ -93,6 +93,9 @@ def initialize_fig_gs_ax(num_rows, num_cols, figsize=(16, 8)):
     
     return fig, gs, ax_array_flat
 
+# Standardize image saving parameters
+def save_image(dir, filename, dpi=300, bbox_inches='tight'):
+    plt.savefig(dir/filename, dpi=dpi, bbox_inches=bbox_inches)
 # ====================================================================================================================
 # Data preprocessing function via pipeline
 # ====================================================================================================================
@@ -134,7 +137,7 @@ def create_pipeline(model_name, model, use_SMOTE):
 # ====================================================================================================================
 # Model evaluation function
 # ====================================================================================================================
-def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model, model_name, create_graphs=True):  
+def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model, model_name, create_graphs=True, combine_graphs=True):  
     # =============================
     # Accuracy
     # =============================
@@ -223,11 +226,18 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     metrics['F1 (manual)'] = np.round(f1_manual, 4)
     metrics['Possible thresholds used'] = possible_thresholds
     
+    # =============================
+    # Plot metrics
+    # =============================
     if (create_graphs):
-        plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline)
+        if (combine_graphs):
+            plot_model_metrics_combined(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline)
+        else:
+            plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline)
     
     return metrics, conmat_df
 
+# Takes evalution metrics from evaluate_model() and plots confusion matrix, ROC, PRC, and precision/recall vs. threshold
 def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
     # =============================
     # Heatmap of confusion matrix
@@ -241,8 +251,8 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
     conmat_df_perc.columns = ['No stroke', 'Stroke']
     conmat_df_perc.index  = ['No stroke', 'Stroke']
     
-    #Create heatmap
-    sns.heatmap(conmat_df_perc, annot=label, cmap="Blues", fmt="", vmin=0)
+    #Create heatmap (hide colorbar (cbar) as the percentages are already displayed)
+    sns.heatmap(conmat_df_perc, annot=label, cmap="Blues", fmt="", vmin=0, cbar=False)
     plt.ylabel('True outcome')
     plt.xlabel('Predicted outcome')
     plt.title(f'{model_name} Confusion Matrix')
@@ -262,7 +272,6 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
     #plt.text(0.95, 0.05, f'AUC = {AUC:.2f}', ha='right', fontsize=12, weight='bold', color='blue')
     plt.show()
     
-    
     # =============================
     # Precision, recall, PRC, AUPRC
     # =============================    
@@ -276,8 +285,8 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
     plt.show()
 
     # Plot precision and recall for each threshold
-    plt.plot(prc_thresholds, precision[:-1], label='Precision',c='orange')
-    plt.plot(prc_thresholds, recall[:-1],label='Recall',c='b')
+    plt.plot(prc_thresholds, precision[:-1], label='Precision', c='orange')
+    plt.plot(prc_thresholds, recall[:-1],label='Recall', c='b')
     plt.title(f'{model_name} Precision/Recall vs. Threshold')
     plt.ylabel('Precision/Recall Value')
     plt.xlabel('Thresholds')
@@ -285,7 +294,73 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
     plt.ylim([0,1])
     plt.show()
     
+def plot_model_metrics_combined(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
+    # Create figure, gridspec, list of axes/subplots mapped to gridspec location
+    fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=2, num_cols=2, figsize=(14, 8))
+   
+    # =============================
+    # Heatmap of confusion matrix
+    # =============================
+    # Labels for each box
+    labels = ['True Neg','False Pos','False Neg','True Pos']
+    counts = ["{0:0.0f}".format(value) for value in conmat.flatten()]
+    percentages = ["{:.2%}".format(value) for value in conmat_df_perc.to_numpy().flatten()]
+    label = (np.array([f'{v1}\n{v2}\n({v3})' for v1,v2,v3 in zip(labels,counts,percentages)])).reshape(2,2)
+    # Rename columns and indeces as they become the heatmap axis labels
+    conmat_df_perc.columns = ['No stroke', 'Stroke']
+    conmat_df_perc.index  = ['No stroke', 'Stroke']
+    
+    #Create heatmap (hide colorbar (cbar) as the percentages are already displayed)
+    axis = ax_array_flat[0]
+    sns.heatmap(conmat_df_perc, annot=label, cmap="Blues", fmt="", vmin=0, cbar=False, ax=axis)
+    axis.set_ylabel('True outcome')
+    axis.set_xlabel('Predicted outcome')
+    axis.set_title('Confusion Matrix') 
+    
+    # =============================
+    # ROC, AUC
+    # =============================   
+    axis = ax_array_flat[1]
+    axis.plot(fpr, tpr, color='orange', label='ROC')#, ax=axis)
+    axis.plot([0, 1], [0, 1], color='darkblue', linestyle='--')#, ax=axis)
+    axis.set_xlim([0, 1])
+    axis.set_ylim([0, 1])
+    axis.fill_between(fpr, tpr, facecolor='orange', alpha=0.7)
+    axis.set_xlabel('False Positive Rate')
+    axis.set_ylabel('True Positive Rate')
+    axis.set_title(f'ROC Curve (AUC = {AUC:.2f})')
+    #plt.text(0.95, 0.05, f'AUC = {AUC:.2f}', ha='right', fontsize=12, weight='bold', color='blue')
+    
+    # =============================
+    # Precision, recall, PRC, AUPRC
+    # =============================    
+    # Plot PRC
+    axis = ax_array_flat[2]
+    axis.plot(recall, precision, marker='.', label='model', color="blue")#, ax=axis)
+    axis.set_xlabel('Recall')
+    axis.set_ylabel('Precision')
+    axis.set_title(f'Precision Recall Curve (AUPRC: {AUPRC:.2f})')
+    axis.plot([0, 1], [baseline, baseline], linestyle='--', label='Baseline', color="orange")#, ax=axis)
+    axis.legend()
 
+    # Plot precision and recall for each threshold
+    axis = ax_array_flat[3]
+    axis.plot(prc_thresholds, precision[:-1], label='Precision', c='orange')#, ax=axis)
+    axis.plot(prc_thresholds, recall[:-1],label='Recall', c='b')#, ax=axis)
+    axis.set_title('Precision/Recall vs. Threshold')
+    axis.set_ylabel('Precision/Recall Value')
+    axis.set_xlabel('Thresholds')
+    axis.legend()
+    axis.set_ylim([0,1])
+    
+    # Finalize figure formatting and export
+    fig.suptitle(f'{model_name} Evaluation Metrics', fontsize=24)
+    #fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
+    plt.subplots_adjust(hspace=0.3, wspace=0.2) # Increase spacing between plots if tight_layout doesn't work
+    save_filename = 'eval_metrics_' + model_name
+    save_image(output_dir, save_filename, bbox_inches='tight')
+    plt.show()
+    
 # ====================================================================================================================
 # Data preprocessing function without using pipeline
 # ====================================================================================================================
@@ -446,7 +521,8 @@ sns.heatmap(data=lr_final_results, annot=True, cmap="Blues", fmt=".3")
 plt.yticks(rotation=0)  # Rotate y-tick labels to be horizontal
 plt.show()
 
-
+print("LOGISTIC REGRESSION METRICS\n")
+print(lr_final_results.loc['LR'])
     
 # ====================================================================================================================
 # Test my functions by fitting and evaluating Logistic Regression model, compare results with and without SMOTE preprocessing
