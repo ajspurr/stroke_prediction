@@ -5,6 +5,7 @@ from pathlib import PureWindowsPath, Path
 import seaborn as sns 
 import matplotlib.pyplot as plt
 
+from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -22,7 +23,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier
 
 from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import train_test_split,cross_val_score
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score, cross_validate
 
 from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
@@ -65,9 +67,35 @@ new_df['hypertension'] = new_df['hypertension'].map(hypertension_dict)
 new_df['heart_disease'] = new_df['heart_disease'].map(heart_disease_dict)
 
 # ====================================================================================================================
-# Data preprocessing function
+# Visualization helper functions
 # ====================================================================================================================
+# Create 2d array of given size, used for figures with gridspec
+def create_2d_array(num_rows, num_cols):
+    matrix = []
+    for r in range(0, num_rows):
+        matrix.append([0 for c in range(0, num_cols)])
+    return matrix
 
+# Initialize figure, grid spec, axes variables
+def initialize_fig_gs_ax(num_rows, num_cols, figsize=(16, 8)):
+    # Create figure, gridspec, and 2d array of axes/subplots with given number of rows and columns
+    fig = plt.figure(constrained_layout=True, figsize=figsize)
+    ax_array = create_2d_array(num_rows, num_cols)
+    gs = fig.add_gridspec(num_rows, num_cols)
+
+    # Map each subplot/axis to gridspec location
+    for r in range(len(ax_array)):
+        for c in range(len(ax_array[r])):
+            ax_array[r][c] = fig.add_subplot(gs[r,c])
+
+    # Flatten 2d array of axis objects to iterate through easier
+    ax_array_flat = np.array(ax_array).flatten()
+    
+    return fig, gs, ax_array_flat
+
+# ====================================================================================================================
+# Data preprocessing function via pipeline
+# ====================================================================================================================
 def create_pipeline(model_name, model, use_SMOTE):
     # Preprocessing for numerical data (SimpleImputer default strategy='mean')
     numerical_transformer = Pipeline(steps=[
@@ -77,7 +105,7 @@ def create_pipeline(model_name, model, use_SMOTE):
     
     # Preprocessing for categorical data
     categorical_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('imputer', SimpleImputer(strategy='most_frequent')), # Not relevant in this dataset, but keeping for future application
         ('onehot', OneHotEncoder(handle_unknown='ignore', sparse=False))
     ])
     
@@ -89,7 +117,7 @@ def create_pipeline(model_name, model, use_SMOTE):
     
     if (use_SMOTE):
         # Bundle preprocessor, SMOTE, model
-        oversample = SMOTE()
+        oversample = SMOTE(random_state=15)
         my_pipeline = Pipeline_imb([
             ('preprocessor', preprocessor),
             ('oversample', oversample),
@@ -134,7 +162,7 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
         sns.heatmap(conmat_df_perc, annot=label, cmap="Blues", fmt="", vmin=0)
         plt.ylabel('True outcome')
         plt.xlabel('Predicted outcome')
-        plt.title(f'Confusion Matrix ({model_name})')
+        plt.title(f'{model_name} Confusion Matrix')
         plt.show() 
     
     # =============================
@@ -159,8 +187,8 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
         plt.fill_between(fpr, tpr, facecolor='orange', alpha=0.7)
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title(f'ROC Curve ({model_name})')
-        plt.text(0.95, 0.05, f'AUC = {AUC:.2f}', ha='right', fontsize=12, weight='bold', color='blue')
+        plt.title(f'{model_name} ROC Curve (AUC = {AUC:.2f})')
+        #plt.text(0.95, 0.05, f'AUC = {AUC:.2f}', ha='right', fontsize=12, weight='bold', color='blue')
         plt.show()
     
     # =============================
@@ -178,10 +206,10 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     
     if (create_graphs):
         # Plot PRC
-        plt.plot(recall, precision, marker='.', label=f'AUPRC: {AUPRC:.2f}', color="blue")
+        plt.plot(recall, precision, marker='.', label='model', color="blue") # label=f'AUPRC: {AUPRC:.2f}'
         plt.xlabel('Recall')
         plt.ylabel('Precision')
-        plt.title(f'Precision Recall Curve ({model_name})')
+        plt.title(f'{model_name} Precision Recall Curve (AUPRC: {AUPRC:.2f})')
         plt.plot([0, 1], [baseline, baseline], linestyle='--', label='Baseline', color="orange")
         plt.legend()
         plt.show()
@@ -189,7 +217,7 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
         # Plot precision and recall for each threshold
         plt.plot(prc_thresholds, precision[:-1], label='Precision',c='orange')
         plt.plot(prc_thresholds, recall[:-1],label='Recall',c='b')
-        plt.title(f'Precision/Recall vs. Threshold ({model_name})')
+        plt.title(f'{model_name} Precision/Recall vs. Threshold')
         plt.ylabel('Precision/Recall Value')
         plt.xlabel('Thresholds')
         plt.legend()
@@ -246,9 +274,170 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     return metrics, conmat_df
 
 # ====================================================================================================================
+# Data preprocessing function without using pipeline
+# ====================================================================================================================
+def manual_preprocess(X_train, X_valid):
+    # =============================
+    # Numerical preprocessing
+    # =============================
+    X_train_num = X_train[numerical_cols]
+    X_valid_num = X_valid[numerical_cols]
+    
+    # Imputation (default strategy='mean')
+    num_imputer = SimpleImputer()
+    imputed_X_train_num = pd.DataFrame(num_imputer.fit_transform(X_train_num), columns=X_train_num.columns, index=X_train_num.index)
+    imputed_X_valid_num = pd.DataFrame(num_imputer.transform(X_valid_num), columns=X_valid_num.columns, index=X_valid_num.index)
+    
+    # Scaling
+    ss = StandardScaler()
+    imputed_scaled_X_train_num = pd.DataFrame(ss.fit_transform(imputed_X_train_num), columns=X_train_num.columns, index=X_train_num.index)
+    imputed_scaled_X_valid_num = pd.DataFrame(ss.transform(imputed_X_valid_num), columns=X_valid_num.columns, index=X_valid_num.index)
+    
+    # =============================
+    # Categorical preprocessing
+    # =============================
+    X_train_cat = X_train[categorical_cols]
+    X_valid_cat = X_valid[categorical_cols]
+    
+    # Imputation
+    cat_imputer = SimpleImputer(strategy='most_frequent')
+    imputed_X_train_cat = pd.DataFrame(cat_imputer.fit_transform(X_train_cat), columns=X_train_cat.columns, index=X_train_cat.index)
+    imputed_X_valid_cat = pd.DataFrame(cat_imputer.transform(X_valid_cat), columns=X_valid_cat.columns, index=X_valid_cat.index)
+    
+    # One-hot encoding
+    OH_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
+    OH_cols_train = pd.DataFrame(OH_encoder.fit_transform(imputed_X_train_cat), index=X_train_cat.index, columns=OH_encoder.get_feature_names_out())
+    OH_cols_valid = pd.DataFrame(OH_encoder.transform(imputed_X_valid_cat), index=X_valid_cat.index, columns=OH_encoder.get_feature_names_out())
+    
+    # Add preprocessed categorical columns back to preprocessed numerical columns
+    X_train_processed = pd.concat([imputed_scaled_X_train_num, OH_cols_train], axis=1)
+    X_valid_processed = pd.concat([imputed_scaled_X_valid_num, OH_cols_valid], axis=1)
+    
+    return X_train_processed, X_valid_processed
+
+# ====================================================================================================================
+# Initial modeling of imbalanced data with Logistic Regression
+# Compare with two methods of rectifying imblanced data (weighted logistic regression and SMOTE)
+# ====================================================================================================================
+# Separate target from predictors
+y = new_df['stroke']
+X = new_df.drop(['stroke'], axis=1)
+
+# Divide data into training and validation subsets
+X_train, X_valid, y_train, y_valid = train_test_split(X, y, train_size=0.8, test_size=0.2, random_state=15)
+
+# =============================
+# Model with logistic regression without accounting for target imbalance
+# =============================
+# Preprocess data
+X_train_processed, X_valid_processed = manual_preprocess(X_train, X_valid)
+
+# Fit logistic regression model
+log_reg = LogisticRegression(random_state=15)
+fit = log_reg.fit(X_train_processed, y_train)
+
+# Make predictions
+y_pred = log_reg.predict(X_valid_processed)
+
+# Evaluate model
+results, conf_mat = evaluate_model(X_train_processed, X_valid_processed, y_train, y_valid, y_pred, log_reg, 'Log Reg')
+
+# =============================
+# Model with weighted logistic regression
+# =============================
+# Quantify target imbalance in training dataset
+num_pos_target = sum(y_train == 1)
+num_neg_target = sum(y_train == 0)
+perc_pos_target = round(num_pos_target / (num_pos_target + num_neg_target), 4)
+ratio_pos_to_neg = round(num_pos_target / num_neg_target, 4)
+ratio_neg_to_pos = round(num_neg_target / num_pos_target, 4)
+
+# Set up weights
+weights = {0:ratio_pos_to_neg, 1:ratio_neg_to_pos}
+
+# Fit weighted logistic regression model
+log_reg_w = LogisticRegression(class_weight=weights, random_state=15)
+fit_w = log_reg_w.fit(X_train_processed, y_train)
+
+# Make predictions
+y_pred_w = log_reg_w.predict(X_valid_processed)
+
+# Evaluate model
+results_w, conf_mat_w = evaluate_model(X_train_processed, X_valid_processed, y_train, y_valid, y_pred_w, log_reg_w, 'Log Reg (weighted)')
+
+# =============================
+# Model after using SMOTE
+# =============================
+smt = SMOTE(random_state=15)
+X_train_resampled, y_train_resampled = smt.fit_resample(X_train_processed, y_train)
+
+# Fit logistic regression to oversampled data
+log_reg_s = LogisticRegression(random_state=15)
+fit_s = log_reg_s.fit(X_train_resampled, y_train_resampled)
+
+# Make predictions
+y_pred_s = log_reg_s.predict(X_valid_processed)
+
+# Evaluate model
+results_s, conmat_s = evaluate_model(X_train_resampled, X_valid_processed, y_train_resampled, y_valid, y_pred_s, log_reg_s, 'Log Reg (w/ SMOTE)')
+
+
+# =============================
+# Compare above three models
+# =============================
+# Visualize pre-SMOTE with PCA
+pca = PCA(n_components=2)
+principalComponents = pca.fit_transform(X_train_processed)
+principal_df = pd.DataFrame(data = principalComponents, columns = ['PC1', 'PC2'], index=X_train_processed.index)
+final_df = pd.concat([principal_df, y_train], axis = 1)
+sns.scatterplot(x=final_df['PC1'], y=final_df['PC2'], hue=final_df['stroke'], s=30)
+plt.plot()
+
+# Visualize SMOTE with PCA
+pca = PCA(n_components=2)
+principalComponents = pca.fit_transform(X_train_resampled)
+principal_df = pd.DataFrame(data = principalComponents, columns = ['PC1', 'PC2'], index=X_train_resampled.index)
+final_df = pd.concat([principal_df, y_train_resampled], axis = 1)
+sns.scatterplot(x=final_df['PC1'], y=final_df['PC2'], hue=final_df['stroke'], s=30)
+plt.plot()
+
+# =============================
+# Combine top 3 model performance metrics into one dataframe then heatmap
+# =============================
+# Create dictionary of model performance metrics
+lr_model_names = ['LR', 'LR (weighted)', 'LR (SMOTE)']
+
+# The dictionary keys are the model names
+lr_models_dict = dict.fromkeys(lr_model_names, None)
+lr_models_dict['LR'] = results
+lr_models_dict['LR (weighted)'] = results_w
+lr_models_dict['LR (SMOTE)'] = results_s
+
+# Combine most important results into one dataframe
+lr_metrics = ['Accuracy', 'Recall', 'Specificity', 'Precision (avg)', 'NPV', 'AUROC', 'f1']
+lr_final_results = pd.DataFrame(columns=lr_metrics, index=lr_model_names)
+
+for row in lr_final_results.index:
+    df_row = lr_final_results.loc[row]
+    df_row['Accuracy'] = lr_models_dict[row]['Accuracy']
+    df_row['Recall'] = lr_models_dict[row]['Sensitivity (recall)']
+    df_row['Specificity'] = lr_models_dict[row]['Specificity']
+    df_row['Precision (avg)'] = lr_models_dict[row]['Average precision']
+    df_row['NPV'] = lr_models_dict[row]['NPV']
+    df_row['AUROC'] = lr_models_dict[row]['AUROC']
+    df_row['f1'] = lr_models_dict[row]['F1']
+lr_final_results = lr_final_results.apply(pd.to_numeric)
+
+# Display in heatmap
+sns.heatmap(data=lr_final_results, annot=True, cmap="Blues", fmt=".3")
+plt.yticks(rotation=0)  # Rotate y-tick labels to be horizontal
+plt.show()
+
+
+    
+# ====================================================================================================================
 # Test my functions by fitting and evaluating Logistic Regression model, compare results with and without SMOTE preprocessing
 # ====================================================================================================================
-
 # Separate target from predictors
 y = new_df['stroke']
 X = new_df.drop(['stroke'], axis=1)
@@ -289,7 +478,7 @@ results_smote, conmat_smote = evaluate_model(X_train, X_valid, y_train, y_valid,
 
 
 # ====================================================================================================================
-# Evaluate multiple models using cross validation scores (f1)
+# Evaluate multiple models using cross validation scores (f1, recall)
 # ====================================================================================================================
 
 # =============================
@@ -321,6 +510,10 @@ models_dict['KNN']['Model'] = KNeighborsClassifier()
 for key in models_dict.keys():
     models_dict[key]['Pipeline'] = create_pipeline(key, models_dict[key]['Model'], use_SMOTE=True)
 
+
+# =========================================================================================================================================================
+# =========== TEST COMBINING CV SCORES INTO ONE LOOP ======================================================================================================
+# =========================================================================================================================================================
 # Perform cross validation (f1 score) for each model
 for key in models_dict.keys():
     models_dict[key]['CV Scores (f1)'] = cross_val_score(models_dict[key]['Pipeline'], X, y, cv=10, scoring='f1')
@@ -328,6 +521,30 @@ for key in models_dict.keys():
 # Perform cross validation (recall) for each model
 for key in models_dict.keys():
     models_dict[key]['CV Scores (recall)'] = cross_val_score(models_dict[key]['Pipeline'], X, y, cv=10, scoring='recall')
+
+# NEW LOOP
+f1 = {}
+rec = {}
+for key in models_dict.keys():
+    scores = cross_validate(models_dict[key]['Pipeline'], X, y, cv=10, scoring=['f1', 'recall'])
+    f1[key] = scores['test_f1']
+    rec[key] = scores['test_recall']
+    # models_dict[key]['CV Scores (f1)'] = scores['test_f1']
+    # models_dict[key]['CV Scores (recall)'] = scores['test_recall']
+
+
+# # TEST MULTIPLE CROSS-VAL SCORES
+# log_reg = LogisticRegression(random_state=15)
+# lr_pipe = create_pipeline('Log Reg', log_reg, use_SMOTE=False)
+# scores = cross_validate(lr_pipe, X, y, cv=5, scoring=['recall', 'f1'])
+# scores['test_recall']
+# scores['test_f1']
+
+# log_reg = LogisticRegression(random_state=15)
+# lr_pipe = create_pipeline('Log Reg', log_reg, use_SMOTE=False)
+# scores = cross_val_score(lr_pipe, X, y, cv=5, scoring='f1')
+
+
 
 # Print mean CV scores for each model
 print('\nMean f1 scores:')
@@ -337,6 +554,8 @@ for key in models_dict.keys():
 print('\nMean recall scores:')
 for key in models_dict.keys():
     print(key, "{0:.4f}".format(models_dict[key]['CV Scores (recall)'].mean()))
+# =========================================================================================================================================================
+
 
 # To get full evaluation metrics on each model, need to fit first 
 for key in models_dict.keys():
@@ -359,12 +578,12 @@ for row in final_results.index:
     final_results_row = final_results.loc[row]
      
     final_results_row['Accuracy'] = model_data['Results']['Accuracy']
-    final_results_row['Recall (CV)'] = np.round(model_data['CV Scores (recall)'].mean(), 4)
+    final_results_row['Recall (CV)'] = round(model_data['CV Scores (recall)'].mean(), 4)
     final_results_row['Specificity'] = model_data['Results']['Specificity']
     final_results_row['Precision (avg)'] = model_data['Results']['Average precision']
     final_results_row['NPV'] = model_data['Results']['NPV']
     final_results_row['AUROC'] = model_data['Results']['AUROC']
-    final_results_row['f1 (CV)'] = np.round(model_data['CV Scores (f1)'].mean(), 4)
+    final_results_row['f1 (CV)'] = round(model_data['CV Scores (f1)'].mean(), 4)
   
 # Display final results table
 # pd.set_option("display.max_columns", len(final_results.columns))
