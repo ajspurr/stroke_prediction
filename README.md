@@ -47,4 +47,11 @@ Did not find obvious opportunities for feature engineering, but can explore this
 <br>
 
 ## Model Building
+### Initial Model: Logistic Regression
+Initially modelled with logistic regression without dealing with imbalanced dataset
+
+<p align="center"><img src="/output/models/eval_metrics_Log Reg.png" width="900"/></p> 
+<img src="/output/models/metrics_log_reg.png" width="200"/>
+
+
 ### Dealing with Imbalanced Dataset
