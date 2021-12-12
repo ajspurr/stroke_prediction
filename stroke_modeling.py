@@ -148,22 +148,6 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     conmat_df = pd.DataFrame(conmat)
     # Create new confusion matrix converting the count to a percentage of true outcome
     conmat_df_perc = conmat_df.div(conmat_df.sum(axis=1), axis=0)
-    # Labels for each box
-    labels = ['True Neg','False Pos','False Neg','True Pos']
-    counts = ["{0:0.0f}".format(value) for value in conmat.flatten()]
-    percentages = ["{:.2%}".format(value) for value in conmat_df_perc.to_numpy().flatten()]
-    label = (np.array([f'{v1}\n{v2}\n({v3})' for v1,v2,v3 in zip(labels,counts,percentages)])).reshape(2,2)
-    # Rename columns and indeces as they become the heatmap axis labels
-    conmat_df_perc.columns = ['No stroke', 'Stroke']
-    conmat_df_perc.index  = ['No stroke', 'Stroke']
-    
-    if (create_graphs):
-        #Create heatmap
-        sns.heatmap(conmat_df_perc, annot=label, cmap="Blues", fmt="", vmin=0)
-        plt.ylabel('True outcome')
-        plt.xlabel('Predicted outcome')
-        plt.title(f'{model_name} Confusion Matrix')
-        plt.show() 
     
     # =============================
     # ROC, AUC
@@ -178,19 +162,6 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     # Calculate AUC for ROC
     AUC = roc_auc_score(y_valid, y_probs)
     
-    # Plot ROC
-    if (create_graphs):
-        plt.plot(fpr, tpr, color='orange', label='ROC')
-        plt.plot([0, 1], [0, 1], color='darkblue', linestyle='--')
-        plt.xlim([0, 1])
-        plt.ylim([0, 1])
-        plt.fill_between(fpr, tpr, facecolor='orange', alpha=0.7)
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title(f'{model_name} ROC Curve (AUC = {AUC:.2f})')
-        #plt.text(0.95, 0.05, f'AUC = {AUC:.2f}', ha='right', fontsize=12, weight='bold', color='blue')
-        plt.show()
-    
     # =============================
     # Precision, recall, PRC, AUPRC
     # =============================
@@ -203,27 +174,7 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     
     # Calculate baseline for PRC plot (number of positive events over the total number of events)
     baseline = len(y_valid[y_valid==1]) / len(y_valid)
-    
-    if (create_graphs):
-        # Plot PRC
-        plt.plot(recall, precision, marker='.', label='model', color="blue") # label=f'AUPRC: {AUPRC:.2f}'
-        plt.xlabel('Recall')
-        plt.ylabel('Precision')
-        plt.title(f'{model_name} Precision Recall Curve (AUPRC: {AUPRC:.2f})')
-        plt.plot([0, 1], [baseline, baseline], linestyle='--', label='Baseline', color="orange")
-        plt.legend()
-        plt.show()
-    
-        # Plot precision and recall for each threshold
-        plt.plot(prc_thresholds, precision[:-1], label='Precision',c='orange')
-        plt.plot(prc_thresholds, recall[:-1],label='Recall',c='b')
-        plt.title(f'{model_name} Precision/Recall vs. Threshold')
-        plt.ylabel('Precision/Recall Value')
-        plt.xlabel('Thresholds')
-        plt.legend()
-        plt.ylim([0,1])
-        plt.show()
-        
+
     # =============================
     # F1 score
     # =============================
@@ -232,7 +183,8 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     # =============================
     # Calculate other metrics commonly used in biomedical research
     # =============================
-    TN, FP, FN, TP = list(map(float, counts))
+    #TN, FP, FN, TP = list(map(float, counts))
+    TN, FP, FN, TP = conmat.flatten()
     sensitivity = TP / (TP+FN) # Same as recall
     specificity = TN / (TN+FP)
     try:
@@ -271,7 +223,68 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     metrics['F1 (manual)'] = np.round(f1_manual, 4)
     metrics['Possible thresholds used'] = possible_thresholds
     
+    if (create_graphs):
+        plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline)
+    
     return metrics, conmat_df
+
+def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
+    # =============================
+    # Heatmap of confusion matrix
+    # =============================
+    # Labels for each box
+    labels = ['True Neg','False Pos','False Neg','True Pos']
+    counts = ["{0:0.0f}".format(value) for value in conmat.flatten()]
+    percentages = ["{:.2%}".format(value) for value in conmat_df_perc.to_numpy().flatten()]
+    label = (np.array([f'{v1}\n{v2}\n({v3})' for v1,v2,v3 in zip(labels,counts,percentages)])).reshape(2,2)
+    # Rename columns and indeces as they become the heatmap axis labels
+    conmat_df_perc.columns = ['No stroke', 'Stroke']
+    conmat_df_perc.index  = ['No stroke', 'Stroke']
+    
+    #Create heatmap
+    sns.heatmap(conmat_df_perc, annot=label, cmap="Blues", fmt="", vmin=0)
+    plt.ylabel('True outcome')
+    plt.xlabel('Predicted outcome')
+    plt.title(f'{model_name} Confusion Matrix')
+    plt.show() 
+    
+    # =============================
+    # ROC, AUC
+    # =============================    
+    plt.plot(fpr, tpr, color='orange', label='ROC')
+    plt.plot([0, 1], [0, 1], color='darkblue', linestyle='--')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.fill_between(fpr, tpr, facecolor='orange', alpha=0.7)
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title(f'{model_name} ROC Curve (AUC = {AUC:.2f})')
+    #plt.text(0.95, 0.05, f'AUC = {AUC:.2f}', ha='right', fontsize=12, weight='bold', color='blue')
+    plt.show()
+    
+    
+    # =============================
+    # Precision, recall, PRC, AUPRC
+    # =============================    
+    # Plot PRC
+    plt.plot(recall, precision, marker='.', label='model', color="blue") # label=f'AUPRC: {AUPRC:.2f}'
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title(f'{model_name} Precision Recall Curve (AUPRC: {AUPRC:.2f})')
+    plt.plot([0, 1], [baseline, baseline], linestyle='--', label='Baseline', color="orange")
+    plt.legend()
+    plt.show()
+
+    # Plot precision and recall for each threshold
+    plt.plot(prc_thresholds, precision[:-1], label='Precision',c='orange')
+    plt.plot(prc_thresholds, recall[:-1],label='Recall',c='b')
+    plt.title(f'{model_name} Precision/Recall vs. Threshold')
+    plt.ylabel('Precision/Recall Value')
+    plt.xlabel('Thresholds')
+    plt.legend()
+    plt.ylim([0,1])
+    plt.show()
+    
 
 # ====================================================================================================================
 # Data preprocessing function without using pipeline
@@ -566,6 +579,12 @@ for key in models_dict.keys():
 for key in models_dict.keys():
     results, conmat = evaluate_model(X_train, X_valid, y_train, y_valid, models_dict[key]['Predictions'], models_dict[key]['Pipeline'], key, create_graphs=False)
     models_dict[key]['Results'] = results
+
+# Debugging - see all thresholds used
+for key in models_dict.keys():
+    print(key)
+    print(models_dict[key]['Results']['Possible thresholds used'])
+    print()
 
 # Combine most important results into one dataframe
 final_metrics = ['Accuracy', 'Recall (CV)', 'Specificity', 'Precision (avg)', 'NPV', 'AUROC', 'f1 (CV)']
