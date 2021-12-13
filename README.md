@@ -65,3 +65,5 @@ Logistic regression works by fitting curves to the training dataset. It repeated
 
 <p align="center"><img src="/output/models/eval_metrics_Log Reg (weighted).png" width="900"/></p> 
 <img src="/output/models/metrics_log_reg_w.png" width="280"/>
+
+You can see a dramatic improvement in recall from 0 to 98%. This model missed only 1 stroke out of 55, which is great. The tradeoff is that there were 714 cases where the model wrongly predicited a stroke. This is reflected in the low precision of 7%. You can see this visually in the bottom right Precision/Recall vs. Threshold graph. The recall holds its high value for much longer, but the precision holds its low value longer as well. The weights can be tuned to optimize the balance between false positives and false negatives using sklearn GridSearchCV. This can be explored in the future. 
