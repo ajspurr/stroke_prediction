@@ -193,7 +193,7 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     specificity = TN / (TN+FP)
     try:
         PPV = TP / (TP+FP) # Same as precision
-    except ZeroDivisionError:
+    except:
         PPV = 0
         print("While evaluating model " + model_name + ", encountered 'ZeroDivisionError' while calculating PPV, so setting PPV to zero")
     NPV = TN / (TN+FN)
@@ -269,7 +269,7 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
     plt.fill_between(fpr, tpr, facecolor='orange', alpha=0.7)
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title(f'{model_name} ROC Curve (AUC = {AUC:.2f})')
+    plt.title(f'{model_name} ROC Curve (AUROC = {AUC:.2f})')
     #plt.text(0.95, 0.05, f'AUC = {AUC:.2f}', ha='right', fontsize=12, weight='bold', color='blue')
     plt.show()
     
@@ -329,7 +329,7 @@ def plot_model_metrics_combined(model_name, conmat, conmat_df_perc, fpr, tpr, AU
     axis.fill_between(fpr, tpr, facecolor='orange', alpha=0.7)
     axis.set_xlabel('False Positive Rate')
     axis.set_ylabel('True Positive Rate')
-    axis.set_title(f'ROC Curve (AUC = {AUC:.2f})')
+    axis.set_title(f'ROC Curve (AUROC = {AUC:.2f})')
     #plt.text(0.95, 0.05, f'AUC = {AUC:.2f}', ha='right', fontsize=12, weight='bold', color='blue')
     
     # =============================
@@ -503,17 +503,23 @@ lr_models_dict['LR (weighted)'] = results_w
 lr_models_dict['LR (SMOTE)'] = results_s
 
 # Combine most important results into one dataframe
-lr_metrics = ['Accuracy', 'Recall', 'Specificity', 'Precision (avg)', 'NPV', 'AUROC', 'f1']
+lr_metrics = ['Accuracy', 'Sensivity (recall)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1']
 lr_final_results = pd.DataFrame(columns=lr_metrics, index=lr_model_names)
 
 for row in lr_final_results.index:
     df_row = lr_final_results.loc[row]
     df_row['Accuracy'] = lr_models_dict[row]['Accuracy']
-    df_row['Recall'] = lr_models_dict[row]['Sensitivity (recall)']
+    df_row['Sensivity (recall)'] = lr_models_dict[row]['Sensitivity (recall)']
     df_row['Specificity'] = lr_models_dict[row]['Specificity']
-    df_row['Precision (avg)'] = lr_models_dict[row]['Average precision']
-    df_row['NPV'] = lr_models_dict[row]['NPV']
     df_row['AUROC'] = lr_models_dict[row]['AUROC']
+    
+    PPV = lr_models_dict[row]['PPV (precision)']
+    if (np.isnan(PPV)):
+        df_row['PPV (precision)'] = 0
+    else:
+        df_row['PPV (precision)'] = PPV
+    df_row['NPV'] = lr_models_dict[row]['NPV']
+    df_row['AUPRC'] = lr_models_dict[row]['AUPRC']
     df_row['f1'] = lr_models_dict[row]['F1']
 lr_final_results = lr_final_results.apply(pd.to_numeric)
 
@@ -521,6 +527,10 @@ lr_final_results = lr_final_results.apply(pd.to_numeric)
 sns.heatmap(data=lr_final_results, annot=True, cmap="Blues", fmt=".3")
 plt.yticks(rotation=0)  # Rotate y-tick labels to be horizontal
 plt.show()
+
+# Other output
+print("LOGISTIC REGRESSION METRICS\n")
+print(lr_final_results.loc['LR'])
 
 print("LOGISTIC REGRESSION METRICS\n")
 print(lr_final_results.loc['LR'])
