@@ -472,23 +472,37 @@ results_s, conmat_s = evaluate_model(X_train_resampled, X_valid_processed, y_tra
 
 
 # =============================
-# Compare above three models
-# =============================
-# Visualize pre-SMOTE with PCA
+# Dataset before and after SMOTE
+# =============================   
+# Pre-SMOTE with PCA
 pca = PCA(n_components=2)
 principalComponents = pca.fit_transform(X_train_processed)
 principal_df = pd.DataFrame(data = principalComponents, columns = ['PC1', 'PC2'], index=X_train_processed.index)
 final_df = pd.concat([principal_df, y_train], axis = 1)
-sns.scatterplot(x=final_df['PC1'], y=final_df['PC2'], hue=final_df['stroke'], s=30)
-plt.plot()
 
-# Visualize SMOTE with PCA
+# Post-SMOTE with PCA
 pca = PCA(n_components=2)
 principalComponents = pca.fit_transform(X_train_resampled)
 principal_df = pd.DataFrame(data = principalComponents, columns = ['PC1', 'PC2'], index=X_train_resampled.index)
-final_df = pd.concat([principal_df, y_train_resampled], axis = 1)
-sns.scatterplot(x=final_df['PC1'], y=final_df['PC2'], hue=final_df['stroke'], s=30)
-plt.plot()
+final_df_s = pd.concat([principal_df, y_train_resampled], axis = 1)
+
+
+# Create figure, gridspec, list of axes/subplots mapped to gridspec location
+fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=2, figsize=(16, 8))
+
+# PCA scatterplots
+axis = ax_array_flat[0]
+sns.scatterplot(x=final_df['PC1'], y=final_df['PC2'], hue=final_df['stroke'], s=30, ax=axis)
+axis = ax_array_flat[1]
+sns.scatterplot(x=final_df_s['PC1'], y=final_df['PC2'], hue=final_df['stroke'], s=30, ax=axis)
+
+# Finalize figure formatting and export
+fig.suptitle(f'{model_name} Evaluation Metrics', fontsize=24)
+#fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
+plt.subplots_adjust(hspace=0.3, wspace=0.2) # Increase spacing between plots if tight_layout doesn't work
+save_filename = 'eval_metrics_' + model_name
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
 
 # =============================
 # Combine top 3 model performance metrics into one dataframe then heatmap
@@ -532,8 +546,8 @@ plt.show()
 print("LOGISTIC REGRESSION METRICS\n")
 print(lr_final_results.loc['LR'])
 
-print("LOGISTIC REGRESSION METRICS\n")
-print(lr_final_results.loc['LR'])
+print("WEIGHTED LOGISTIC REGRESSION METRICS\n")
+print(lr_final_results.loc['LR (weighted)'])
     
 # ====================================================================================================================
 # Test my functions by fitting and evaluating Logistic Regression model, compare results with and without SMOTE preprocessing
