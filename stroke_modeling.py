@@ -137,7 +137,8 @@ def create_pipeline(model_name, model, use_SMOTE):
 # ====================================================================================================================
 # Model evaluation function
 # ====================================================================================================================
-def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model, model_name, create_graphs=True, combine_graphs=True):  
+def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model, model_name, 
+                   create_graphs=True, combine_graphs=True, round_results=3):  
     # =============================
     # Accuracy
     # =============================
@@ -214,17 +215,17 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     # Model performance metrics to be returned by this function
     # =============================
     metrics = {}
-    metrics['Accuracy'] = np.round(accuracy, 4)
-    metrics['Sensitivity (recall)'] = np.round(sensitivity, 4)
-    metrics['Specificity'] = np.round(specificity, 4)
-    metrics['PPV (precision)'] = np.round(PPV, 4)
-    metrics['NPV'] = np.round(NPV, 4)
-    metrics['AUROC'] = np.round(AUC, 4)
-    metrics['Average precision'] = np.round(average_precision, 4)
-    metrics['AUPRC'] = np.round(AUPRC, 4)
-    metrics['F1'] = np.round(f1, 4)
-    metrics['F1 (manual)'] = np.round(f1_manual, 4)
-    metrics['Possible thresholds used'] = possible_thresholds
+    metrics['Accuracy'] = np.round(accuracy, round_results)
+    metrics['Sensitivity (recall)'] = np.round(sensitivity, round_results)
+    metrics['Specificity'] = np.round(specificity, round_results)
+    metrics['PPV (precision)'] = np.round(PPV, round_results)
+    metrics['NPV'] = np.round(NPV, round_results)
+    metrics['AUROC'] = np.round(AUC, round_results)
+    metrics['Average precision'] = np.round(average_precision, round_results)
+    metrics['AUPRC'] = np.round(AUPRC, round_results)
+    metrics['F1'] = np.round(f1, round_results)
+    metrics['F1 (manual)'] = np.round(f1_manual, round_results)   
+    metrics['Possible thresholds used'] = list(map(lambda x: round(x, round_results), possible_thresholds))
     
     # =============================
     # Plot metrics
