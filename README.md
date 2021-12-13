@@ -51,7 +51,7 @@ Full code: [stroke_modeling.py](/stroke_modeling.py) <br> All figures: [stroke_p
 ### Initial Model: Logistic Regression
 Initially modelled with logistic regression without dealing with imbalanced dataset
 
-<p align="center"><img src="/output/models/eval_metrics_Log Reg.png" width="900"/></p> 
+<p align="center"><img src="/output/models/eval_metrics_log_reg.png" width="900"/></p> 
 <img src="/output/models/metrics_log_reg.png" width="200"/>
 
 This model has a 95% accuracy and AUROC of 85%. However, looking at the confusion matrix, you can see that it simply predicted that no one in the test dataset would have a stroke, and since only 5% had a stroke, it still resulted in 95% accuracy. This is why it is important to choose the correct metrics to measure model performance on imbalanced data. 
@@ -64,7 +64,7 @@ Logistic regression works by fitting curves to the training dataset. It repeated
 
 (Credit to Jason Brownlee for explaining Weighted Logistic Regression in [this post](https://machinelearningmastery.com/cost-sensitive-logistic-regression/))
 
-<p align="center"><img src="/output/models/eval_metrics_Log Reg (weighted).png" width="900"/></p> 
+<p align="center"><img src="/output/models/eval_metrics_log_reg_weighted.png" width="900"/></p> 
 <img src="/output/models/metrics_log_reg_w.png" width="280"/>
 
 You can see a dramatic improvement in recall from 0 to 98%. This model missed only 1 stroke out of 55, which is great. The tradeoff is that there were 714 cases where the model wrongly predicited a stroke. This is reflected in the low precision of 7%. You can see this visually in the bottom right Precision/Recall vs. Threshold graph. The recall holds its high value for much longer, but the precision holds its low value longer as well. The weights can be tuned to optimize the balance between false positives and false negatives using sklearn GridSearchCV. This can be explored in the future. 
@@ -78,7 +78,7 @@ Another way to deal with an imbalanced dataset is to either remove rows from the
 
 The plot to the left is a PCA of the original dataset. The plot to the left is a PCA after SMOTE was used. You can see there is now an equal number of positive and negative outcome cases. You can also see that the new samples aren't exact copies of one another, but are close enough that they group together. Now I will use logistic regression to build a model, results below: 
 
-<p align="center"><img src="/output/models/eval_metrics_Log Reg (SMOTE).png" width="900"/></p> 
+<p align="center"><img src="/output/models/eval_metrics_log_reg_smote.png" width="900"/></p> 
 <img src="/output/models/metrics_log_reg_smote.png" width="300"/>
 
 Compared to weighted logistic regression, this model has a bit more balance of recall and precision. The recall decreased from 98% to 82% and the precision increased from 7% to 15%. It missed 10 strokes out of 55 (compared to missing just 1) but it only wrongly predicted a stroke 251 times (compared to 714).  
