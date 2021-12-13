@@ -58,7 +58,7 @@ This model has a 95% accuracy and AUROC of 85%. However, looking at the confusio
 
 The recall (or sensitivity) was 0, which is unacceptable as it means this model would have missed 55 strokes in a set of about 1000 individuals. The precision (or positive predictive value) is actually undefined as it is calculated as TP/(TP + FP) which is 0/0 in this case. Recall and precision, as well as AUPRC and f1 by extension, focus more on the positive class (stroke) than the negative class, which makes them much more useful than accuracy and AUROC in this case. This is true for two reasons: 1. analytically, because this dataset is highly imbalanced towards the negative class, and 2. clinically, because you do not want to miss a stroke. 
 
-### Dealing with Imbalanced Dataset
+### Dealing with an Imbalanced Dataset
 #### Option 1: Optimize Model
 Logistic regression works by fitting curves to the training dataset. It repeatedly changes the parameters of the curve to minimize the loss (error) of the model on the training dataset. Normally the errors for each target class (stroke vs. no stroke) are treated the same when it comes to using them to optimize the parameters. This clearly doesn't work well for imbalanced datasets. However, the sklearn LogisticRegression class has a hyperparatmer 'class_weight' which allows you to increase or decrease the weight of target classes. In this case, we will increase the weight of the 'stroke' class so that errors in prediction of stroke will lead to more updating of the model coefficients. And we will do the inverse for the 'not stroke' class. One way to choose the exact weights is to use the inverse of the class distribution in the training data. In this case, there are 194 individuals with stroke and 3894 without a stroke. So I will weight the 'no stroke' class as 194/3894 = 0.048, and weight the 'stroke' class as 3894/194 = 20.
 
@@ -70,7 +70,7 @@ Logistic regression works by fitting curves to the training dataset. It repeated
 You can see a dramatic improvement in recall from 0 to 98%. This model missed only 1 stroke out of 55, which is great. The tradeoff is that there were 714 cases where the model wrongly predicited a stroke. This is reflected in the low precision of 7%. You can see this visually in the bottom right Precision/Recall vs. Threshold graph. The recall holds its high value for much longer, but the precision holds its low value longer as well. The weights can be tuned to optimize the balance between false positives and false negatives using sklearn GridSearchCV. This can be explored in the future. 
 
 #### Option 2: Oversampling
+Another way to deal with an imbalanced dataset is to either remove rows from the majority class (undersampling) or to add rows to the minority class (oversampling). This dataset isn't huge so removing data probably isn't the best choice. For oversampling, you can simply duplicate rows from the minority class, which doesn't add new information to the model, or you can synthesize new minority class data using SMOTE (Sythetic Minority Oversampling TEchnique). The technical details can be found in the source below, but the point is that it generates new minority class examples that are similar to the existing minority class data. 
 
-
-(Credit to Jason Brownlee for explaining Weighted Logistic Regression in [this post](https://machinelearningmastery.com/smote-oversampling-for-imbalanced-classification/))
+(Credit to Jason Brownlee for explaining SMOTE in [this post](https://machinelearningmastery.com/smote-oversampling-for-imbalanced-classification/))
 
