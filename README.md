@@ -74,3 +74,4 @@ Another way to deal with an imbalanced dataset is to either remove rows from the
 
 (Credit to Jason Brownlee for explaining SMOTE in [this post](https://machinelearningmastery.com/smote-oversampling-for-imbalanced-classification/))
 
+<p align="center"><img src="/output/models/pre_post_smote_pca.png" width="900"/></p> 
