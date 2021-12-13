@@ -85,3 +85,5 @@ Compared to weighted logistic regression, this model has a bit more balance of r
 
 #### Putting It All Together
 The heatmap below compares the performance metrics of logistic regression, weighted logistic regression, and logistic regression post-SMOTE. 
+
+<p align="center"><img src="/output/models/lr_all_metrics.png" width="900"/></p> 
