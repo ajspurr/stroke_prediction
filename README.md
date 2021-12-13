@@ -39,7 +39,7 @@ Will scale continuous variables using sklearn StandardScaler.
 Ordinal encoding not useful as categorical are not ordinal. One-hot encoding is appropriate, especially since all features have low cardinality, so it won't need to create 10s or 100s of new columns. 
 
 #### Data Cleaning
-Fortunately, data was well-formatted. Replaced 0s and 1s in 'hypertension' and 'heart_disease' columns with more descriptive string so that one-hot encoded columns are easier to interpret. 
+Fortunately, data was well-formatted. Replaced 0s and 1s in 'hypertension' and 'heart_disease' columns with more descriptive strings so that one-hot encoded columns are easier to interpret. 
 
 #### Feature Engineering
 Did not find obvious opportunities for feature engineering, but can explore this in the future.
@@ -53,5 +53,6 @@ Initially modelled with logistic regression without dealing with imbalanced data
 <p align="center"><img src="/output/models/eval_metrics_Log Reg.png" width="900"/></p> 
 <img src="/output/models/metrics_log_reg.png" width="200"/>
 
+This model has a 95% accuracy and ROC AUC of 85%. However, looking at the confusion matrix, you can see that it simply predicted that no one in the test dataset would have a stroke, and since only 5% had one, it still resulted in 95% accuracy. This is why it is important to choose the correct metrics to measure model performance on imbalanced data. 
 
 ### Dealing with Imbalanced Dataset
