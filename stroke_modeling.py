@@ -610,13 +610,11 @@ for key in models_dict.keys():
 # =========================================================================================================================================================
 # =========== TEST COMBINING CV SCORES INTO ONE LOOP ======================================================================================================
 # =========================================================================================================================================================
-# Perform cross validation (f1 score) for each model
+# Perform cross validation (f1 and recall) for each model 
 for key in models_dict.keys():
-    models_dict[key]['CV Scores (f1)'] = cross_val_score(models_dict[key]['Pipeline'], X, y, cv=10, scoring='f1')
-
-# Perform cross validation (recall) for each model
-for key in models_dict.keys():
-    models_dict[key]['CV Scores (recall)'] = cross_val_score(models_dict[key]['Pipeline'], X, y, cv=10, scoring='recall')
+    scores = cross_validate(models_dict[key]['Pipeline'], X, y, cv=10, scoring=['f1', 'recall'])
+    models_dict[key]['CV Scores (f1)'] = scores['test_f1']
+    models_dict[key]['CV Scores (recall)'] = scores['test_recall']
 
 # Print mean CV scores for each model
 print('\nMean f1 scores:')
@@ -626,40 +624,6 @@ for key in models_dict.keys():
 print('\nMean recall scores:')
 for key in models_dict.keys():
     print(key, "{0:.4f}".format(models_dict[key]['CV Scores (recall)'].mean()))
-
-
-
-# NEW LOOP
-f1 = {}
-rec = {}
-for key in models_dict.keys():
-    scores = cross_validate(models_dict[key]['Pipeline'], X, y, cv=10, scoring=['f1', 'recall'])
-    f1[key] = scores['test_f1']
-    rec[key] = scores['test_recall']
-    # models_dict[key]['CV Scores (f1)'] = scores['test_f1']
-    # models_dict[key]['CV Scores (recall)'] = scores['test_recall']
-
-print('\nMean f1 scores (combined):')
-for key in models_dict.keys():
-    print(key, "{0:.4f}".format(f1[key].mean()))
-
-print('\nMean recall scores (combined):')
-for key in models_dict.keys():
-    print(key, "{0:.4f}".format(rec[key].mean()))
-
-# # TEST MULTIPLE CROSS-VAL SCORES
-# log_reg = LogisticRegression(random_state=15)
-# lr_pipe = create_pipeline('Log Reg', log_reg, use_SMOTE=False)
-# scores = cross_validate(lr_pipe, X, y, cv=5, scoring=['recall', 'f1'])
-# scores['test_recall']
-# scores['test_f1']
-
-# log_reg = LogisticRegression(random_state=15)
-# lr_pipe = create_pipeline('Log Reg', log_reg, use_SMOTE=False)
-# scores = cross_val_score(lr_pipe, X, y, cv=5, scoring='f1')
-
-
-
 
 # =========================================================================================================================================================
 
