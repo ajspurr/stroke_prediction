@@ -47,6 +47,7 @@ Did not find obvious opportunities for feature engineering, but can explore this
 <br>
 
 ## Model Building
+Full code: [stroke_modeling.py](/stroke_modeling.py) <br> All figures: [stroke_prediction/output/models](/output/models)
 ### Initial Model: Logistic Regression
 Initially modelled with logistic regression without dealing with imbalanced dataset
 
