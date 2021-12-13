@@ -553,62 +553,25 @@ for row in lr_final_results.index:
     df_row['f1'] = lr_models_dict[row]['F1']
 lr_final_results = lr_final_results.apply(pd.to_numeric)
 
-# Display in heatmap
-sns.heatmap(data=lr_final_results, annot=True, cmap="Blues", fmt=".3")
+# Display in heatmap (transposed the df first)
+sns.heatmap(data=lr_final_results.T, annot=True, cmap="Blues", fmt=".3")
 plt.yticks(rotation=0)  # Rotate y-tick labels to be horizontal
+plt.title('Comparison of Three Logistic Regression Models')
+save_filename = 'lr_all_metrics'
+save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 # Other output
 print("LOGISTIC REGRESSION METRICS\n")
 print(lr_final_results.loc['LR'])
-
 print("WEIGHTED LOGISTIC REGRESSION METRICS\n")
 print(lr_final_results.loc['LR (weighted)'])
+print("LOGISTIC REGRESSION w/SMOTE METRICS\n")
+print(lr_final_results.loc['LR (SMOTE)'])
     
-# ====================================================================================================================
-# Test my functions by fitting and evaluating Logistic Regression model, compare results with and without SMOTE preprocessing
-# ====================================================================================================================
-# Separate target from predictors
-y = new_df['stroke']
-X = new_df.drop(['stroke'], axis=1)
-
-# Divide data into training and validation subsets
-X_train, X_valid, y_train, y_valid = train_test_split(X, y, train_size=0.8, test_size=0.2, random_state=15)
-
-# =============================
-# Not using SMOTE
-# =============================
-# Preprocessing of training data and fit model
-my_pipeline = create_pipeline('Log Reg', LogisticRegression(random_state=15), use_SMOTE=False)
-fit = my_pipeline.fit(X_train, y_train)
-
-# Make predictions
-y_pred = my_pipeline.predict(X_valid)
-
-# Evaluate model
-results, conmat = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, my_pipeline, 'Log Reg')
-
-# =============================
-# Using SMOTE
-# =============================
-# Preprocessing of training data and fit model
-my_pipeline_smote = create_pipeline('Log Reg', LogisticRegression(random_state=15), use_SMOTE=True)
-fit_smote = my_pipeline_smote.fit(X_train, y_train)
-
-# Make predictions
-y_pred_smote = my_pipeline_smote.predict(X_valid)
-
-# Evaluate model
-results_smote, conmat_smote = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_smote, my_pipeline_smote, 'Log Reg')
-
-# =============================
-# Compare SMOTE vs. not
-# =============================
-
-
 
 # ====================================================================================================================
-# Evaluate multiple models using cross validation scores (f1, recall)
+# Evaluate multiple models using cross validation scores for f1 and recall
 # ====================================================================================================================
 
 # =============================
