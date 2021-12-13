@@ -74,4 +74,14 @@ Another way to deal with an imbalanced dataset is to either remove rows from the
 
 (Credit to Jason Brownlee for explaining SMOTE in [this post](https://machinelearningmastery.com/smote-oversampling-for-imbalanced-classification/))
 
-<p align="center"><img src="/output/models/pre_post_smote_pca.png" width="900"/></p> 
+<p align="center"><img src="/output/models/pre_post_smote_pca.png" width="800"/></p> 
+
+The plot to the left is a PCA of the original dataset. The plot to the left is a PCA after SMOTE was used. You can see there is now an equal number of positive and negative outcome cases. You can also see that the new samples aren't exact copies of one another, but are close enough that they group together. Now I will use logistic regression to build a model, results below: 
+
+<p align="center"><img src="/output/models/eval_metrics_Log Reg (SMOTE).png" width="900"/></p> 
+<img src="/output/models/metrics_log_reg_smote.png" width="300"/>
+
+Compared to weighted logistic regression, this model has a bit more balance of recall and precision. The recall decreased from 98% to 82% and the precision increased from 7% to 15%. It missed 10 strokes out of 55 (compared to missing just 1) but it only wrongly predicted a stroke 251 times (compared to 714).  
+
+#### Putting It All Together
+The heatmap below compares the performance metrics of logistic regression, weighted logistic regression, and logistic regression post-SMOTE. 
