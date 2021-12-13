@@ -84,6 +84,6 @@ The plot to the left is a PCA of the original dataset. The plot to the left is a
 Compared to weighted logistic regression, this model has a bit more balance of recall and precision. The recall decreased from 98% to 82% and the precision increased from 7% to 15%. It missed 10 strokes out of 55 (compared to missing just 1) but it only wrongly predicted a stroke 251 times (compared to 714).  
 
 #### Putting It All Together
-The heatmap below compares the performance metrics of logistic regression, weighted logistic regression, and logistic regression post-SMOTE. 
+The heatmap below compares the performance metrics of logistic regression, weighted logistic regression, and logistic regression post-SMOTE. As mentioned above, the most important metric is recall, as you do not want to miss any stroke cases. In this regard, weighted logistic regression was by far the best. Logistic regression post-SMOTE had a significantly lower recall with a minimal increase in precision (and no increase in AUPRC, or average precision). This also resulted in a higher f1 value, which is the harmonic mean of recall and precision. 
 
 <p align="center"><img src="/output/models/lr_all_metrics.png" width="900"/></p> 
