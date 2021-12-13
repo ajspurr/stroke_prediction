@@ -488,19 +488,35 @@ final_df_s = pd.concat([principal_df, y_train_resampled], axis = 1)
 
 
 # Create figure, gridspec, list of axes/subplots mapped to gridspec location
-fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=2, figsize=(16, 8))
+fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=1, num_cols=2, figsize=(10, 5))
 
 # PCA scatterplots
+# Pre-SMOTE
 axis = ax_array_flat[0]
 sns.scatterplot(x=final_df['PC1'], y=final_df['PC2'], hue=final_df['stroke'], s=30, ax=axis)
+axis.set_title('PCA Pre-SMOTE')
+current_handles, current_labels = axis.get_legend_handles_labels()
+num_stroke = sum(y_train == 1)
+num_no_stroke = sum(y_train == 0)
+new_legend_labels = ['No stroke (count: ' + str(num_no_stroke) + ')', 'Stroke (count: ' + str(num_stroke) + ')']
+axis.legend(handles=current_handles, labels=new_legend_labels, loc='upper right')
+
+#Post-SMOTE
 axis = ax_array_flat[1]
-sns.scatterplot(x=final_df_s['PC1'], y=final_df['PC2'], hue=final_df['stroke'], s=30, ax=axis)
+sns.scatterplot(x=final_df_s['PC1'], y=final_df_s['PC2'], hue=final_df_s['stroke'], s=30, ax=axis)
+axis.set_title('PCA Post-SMOTE')
+current_handles, current_labels = axis.get_legend_handles_labels()
+num_stroke = sum(y_train_resampled == 1)
+num_no_stroke = sum(y_train_resampled == 0)
+new_legend_labels = ['No stroke (count: ' + str(num_no_stroke) + ')', 'Stroke (count: ' + str(num_stroke) + ')']
+axis.legend(handles=current_handles, labels=new_legend_labels, loc='upper right')
+
 
 # Finalize figure formatting and export
-fig.suptitle(f'{model_name} Evaluation Metrics', fontsize=24)
-#fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
-plt.subplots_adjust(hspace=0.3, wspace=0.2) # Increase spacing between plots if tight_layout doesn't work
-save_filename = 'eval_metrics_' + model_name
+fig.suptitle('Pre- and Post-SMOTE PCA', fontsize=24)
+fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
+#plt.subplots_adjust(hspace=0.3, wspace=0.2) # Increase spacing between plots if tight_layout doesn't work
+save_filename = 'pre_post_smote_pca'
 save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
