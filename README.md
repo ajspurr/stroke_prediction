@@ -6,7 +6,7 @@ Highlights from Exploratory Data Analysis <br>Full code: [stroke_eda.py](/stroke
 
 1. Basic data exploration. Dataset has 5110 rows and 11 columns, a mix of numerical and categorical data types, and minimal missing data. 
 
-<p align="center"><img src="/output/eda/feature_summary.png" width="500"/></p>
+<p align="center"><img src="/output/eda/feature_summary.png" width="600"/></p>
 <br>
 2. Visualization of categorical variables below. Notably, the target variable (stroke) is highly imbalanced. 
 
@@ -62,3 +62,6 @@ The recall (or sensitivity) was 0, which is unacceptable as it means this model 
 Logistic regression works by fitting curves to the training dataset. It repeatedly changes the parameters of the curve to minimize the loss (error) of the model on the training dataset. Normally the errors for each target class (stroke vs. no stroke) are treated the same when it comes to using them to optimize the parameters. This clearly doesn't work well for imbalanced datasets. However, the sklearn LogisticRegression class has a hyperparatmer 'class_weight' which allows you to increase or decrease the weight of target classes. In this case, we will increase the weight of the 'stroke' class so that errors in prediction of stroke will lead to more updating of the model coefficients. And we will do the inverse for the 'not stroke' class. One way to choose the exact weights is to use the inverse of the class distribution in the training data. In this case, there are 194 individuals with stroke and 3894 without a stroke. So I will weight the 'no stroke' class as 194/3894 = 0.048, and weight the 'stroke' class as 3894/194 = 20.
 
 (Credit to Jason Brownlee for explaining Weighted Logistic Regression in [this post](https://machinelearningmastery.com/cost-sensitive-logistic-regression/))
+
+<p align="center"><img src="/output/models/eval_metrics_Log Reg (weighted).png" width="900"/></p> 
+<img src="/output/models/metrics_log_reg_w.png" width="280"/>
