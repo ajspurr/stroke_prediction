@@ -573,6 +573,9 @@ print(lr_final_results.loc['LR (SMOTE)'])
 # ====================================================================================================================
 # Evaluate multiple models using cross validation scores for f1 and recall
 # ====================================================================================================================
+# Separate target from predictors
+y = new_df['stroke']
+X = new_df.drop(['stroke'], axis=1)
 
 # =============================
 # Create a dictionary of models, keeping track of their pipelines and performance
@@ -615,6 +618,17 @@ for key in models_dict.keys():
 for key in models_dict.keys():
     models_dict[key]['CV Scores (recall)'] = cross_val_score(models_dict[key]['Pipeline'], X, y, cv=10, scoring='recall')
 
+# Print mean CV scores for each model
+print('\nMean f1 scores:')
+for key in models_dict.keys():
+    print(key, "{0:.4f}".format(models_dict[key]['CV Scores (f1)'].mean()))
+
+print('\nMean recall scores:')
+for key in models_dict.keys():
+    print(key, "{0:.4f}".format(models_dict[key]['CV Scores (recall)'].mean()))
+
+
+
 # NEW LOOP
 f1 = {}
 rec = {}
@@ -625,6 +639,13 @@ for key in models_dict.keys():
     # models_dict[key]['CV Scores (f1)'] = scores['test_f1']
     # models_dict[key]['CV Scores (recall)'] = scores['test_recall']
 
+print('\nMean f1 scores (combined):')
+for key in models_dict.keys():
+    print(key, "{0:.4f}".format(f1[key].mean()))
+
+print('\nMean recall scores (combined):')
+for key in models_dict.keys():
+    print(key, "{0:.4f}".format(rec[key].mean()))
 
 # # TEST MULTIPLE CROSS-VAL SCORES
 # log_reg = LogisticRegression(random_state=15)
@@ -639,14 +660,7 @@ for key in models_dict.keys():
 
 
 
-# Print mean CV scores for each model
-print('\nMean f1 scores:')
-for key in models_dict.keys():
-    print(key, "{0:.4f}".format(models_dict[key]['CV Scores (f1)'].mean()))
 
-print('\nMean recall scores:')
-for key in models_dict.keys():
-    print(key, "{0:.4f}".format(models_dict[key]['CV Scores (recall)'].mean()))
 # =========================================================================================================================================================
 
 
