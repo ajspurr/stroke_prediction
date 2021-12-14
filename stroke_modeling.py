@@ -137,6 +137,8 @@ def create_pipeline(model_name, model, use_SMOTE):
 # ====================================================================================================================
 # Model evaluation function
 # ====================================================================================================================
+# Parameter 'model_name' will be used for coding and saving images
+# Parameter 'model_display_name' will be used for plot labels
 def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model, model_name, 
                    create_graphs=True, combine_graphs=True, round_results=3):  
     # =============================
@@ -239,6 +241,8 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     return metrics, conmat_df
 
 # Takes evalution metrics from evaluate_model() and plots confusion matrix, ROC, PRC, and precision/recall vs. threshold
+# Parameter 'model_name' will be used for coding and saving images
+# Parameter 'model_display_name' will be used for plot labels
 def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
     # =============================
     # Heatmap of confusion matrix
@@ -294,7 +298,9 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
     plt.legend()
     plt.ylim([0,1])
     plt.show()
-    
+
+# Parameter 'model_name' will be used for coding and saving images
+# Parameter 'model_display_name' will be used for plot labels
 def plot_model_metrics_combined(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
     # Create figure, gridspec, list of axes/subplots mapped to gridspec location
     fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=2, num_cols=2, figsize=(14, 8))
@@ -639,7 +645,7 @@ for key in models_dict.keys():
     print()
 
 # Combine most important results into one dataframe
-final_metrics = ['Accuracy', 'Sensitivity (recall)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1']
+final_metrics = ['Accuracy', 'Sensitivity (recall, CV)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1 (CV)']
 final_results = pd.DataFrame(columns=final_metrics, index=model_names)
 
 for row in final_results.index:
@@ -649,13 +655,13 @@ for row in final_results.index:
     final_results_row = final_results.loc[row]
      
     final_results_row['Accuracy'] = model_data['Results']['Accuracy']
-    final_results_row['Sensitivity (recall)'] = round(model_data['CV Scores (recall)'].mean(), 4)
+    final_results_row['Sensitivity (recall, CV)'] = round(model_data['CV Scores (recall)'].mean(), 4)
     final_results_row['Specificity'] = model_data['Results']['Specificity']
     final_results_row['AUROC'] = model_data['Results']['AUROC']
     final_results_row['PPV (precision)'] = model_data['Results']['PPV (precision)']
     final_results_row['NPV'] = model_data['Results']['NPV']
-    final_results_row['AUPRC'] = model_data['Results']['Average AUPRC']
-    final_results_row['f1'] = round(model_data['CV Scores (f1)'].mean(), 4)
+    final_results_row['AUPRC'] = model_data['Results']['AUPRC']
+    final_results_row['f1 (CV)'] = round(model_data['CV Scores (f1)'].mean(), 4)
   
 # Display final results table
 # pd.set_option("display.max_columns", len(final_results.columns))
@@ -707,7 +713,9 @@ plt.show()
 # Function organizing GridSearchCV results
 # =============================
 # Function assumes scoring=['f1', 'recall'] and that refit='f1'
-# The recall and precision that are returned are the mean cross-validated versions
+# Parameter 'model_name' will be used for coding and saving images
+# Parameter 'model_display_name' will be used for plot labels
+# The recall and precision that are returned are the mean cross-validated values
 def gridsearch_results(model_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True):
     # Create GridSearch object and fit data
     grid_search = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, refit=refit, n_jobs=n_jobs, cv=cv, verbose=verbose)
@@ -734,10 +742,10 @@ def gridsearch_results(model_name, estimator, param_grid, scoring, refit, n_jobs
     results_gs, conmat_gs = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_gs, pipeline_gs, model_name, create_graphs=False)
     
     # Combine most important results into one dataframe
-    return_metrics = ['Accuracy', 'Sensivity (CV recall)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1 (CV)']
+    return_metrics = ['Accuracy', 'Sensitivity (recall, CV)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1 (CV)']
     return_results = pd.DataFrame(columns=return_metrics, index=[model_name])
     return_results['Accuracy'] = results_gs['Accuracy']    
-    return_results['Sensivity (CV recall)'] = best_estimator_recall
+    return_results['Sensitivity (recall, CV)'] = best_estimator_recall
     return_results['Specificity'] = results_gs['Specificity']
     return_results['AUROC'] = results_gs['AUROC']
     return_results['PPV (precision)'] = results_gs['PPV (precision)']
@@ -747,40 +755,51 @@ def gridsearch_results(model_name, estimator, param_grid, scoring, refit, n_jobs
     
     return grid_search, return_results
 
-# ==========================================================
+# =======================================================================================
 # Hyperparameter tuning XGBoost
-# ==========================================================
+# =======================================================================================
 # https://www.mikulskibartosz.name/xgboost-hyperparameter-tuning-in-python-using-grid-search/
 # https://towardsdatascience.com/binary-classification-xgboost-hyperparameter-tuning-scenarios-by-non-exhaustive-grid-search-and-c261f4ce098d
 
 # =============================
-# Weighted XGBoost (without SMOTE)
+# Weighted XGBoost with hyperparameter tuning without SMOTE
 # =============================
+model_name = 'xgboost_w'
+model_display_name = 'Weighted XGBoost'
+
 xgb_model = XGBClassifier(objective='binary:logistic', nthread=4, seed=15, use_label_encoder=False, eval_metric='logloss')
-xgb_pipeline = create_pipeline('XGBoost', xgb_model, use_SMOTE=False)
+xgb_pipeline = create_pipeline(model_name, xgb_model, use_SMOTE=False)
+xgb_parameters = {model_name + '__max_depth': range (8, 10, 1), 
+                  model_name + '__n_estimators': range(60, 140, 40), 
+                  model_name + '__learning_rate': [0.1, 0.01]}
+grid_search_obj_xgb, return_results_xgb = gridsearch_results(model_name=model_display_name, estimator=xgb_pipeline, param_grid=xgb_parameters, scoring=['f1', 'recall'], refit='f1', n_jobs=10, cv=3, verbose=True)
 
-xgb_parameters = {'XGBoost__max_depth': range (8, 10, 1), 'XGBoost__n_estimators': range(60, 140, 40), 'XGBoost__learning_rate': [0.1, 0.01]}
-grid_search_obj_xgb, return_results_xgb = gridsearch_results(model_name='Weighted XGBoost', estimator=xgb_pipeline, param_grid=xgb_parameters, scoring=['f1', 'recall'], refit='f1', n_jobs=10, cv=3, verbose=True)
-
-return_results_xgb.T
+xgb_pipeline.get_params().keys()
 
 # =============================
-# With SMOTE
+# XGBoost with hyperparameter tuning with SMOTE
 # =============================
 xgb_model_smote = XGBClassifier(objective='binary:logistic', nthread=4, seed=15, use_label_encoder=False, eval_metric='logloss')
 xgb_pipeline_smote = create_pipeline('XGBoost', xgb_model_smote, use_SMOTE=True)
-
 xgb_smote_parameters = {'XGBoost__max_depth': range (8, 10, 1), 'XGBoost__n_estimators': range(60, 140, 40), 'XGBoost__learning_rate': [0.1, 0.01]}
 grid_search_obj_xgb_s, return_results_xgb_s = gridsearch_results(model_name='XGBoost (SMOTE)', estimator=xgb_pipeline_smote, param_grid=xgb_smote_parameters, scoring=['f1', 'recall'], refit='f1', n_jobs=10, cv=3, verbose=True)
 
-return_results_xgb_s.T
+# =============================
+# Combine XGBoost with SMOTE, XGBoost tuned and weighted with no SMOTE, XGBoost tuned with SMOTE
+# =============================
+combined_xgb = pd.concat([final_results.T['XGBoost'], return_results_xgb.T, return_results_xgb_s.T], axis=1, join='inner')
+#final_results = final_results.apply(pd.to_numeric)
+sns.heatmap(data=combined_xgb, annot=True, cmap="Blues", fmt=".3")
+plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
+plt.title('XGB Combined Metrics')
+save_filename = 'combined_metrics_xgb'
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
 
 
-
-
-# ==========================================================
+# =======================================================================================
 # Hyperparameter tuning Logistic Regression
-# ==========================================================
+# =======================================================================================
 # Logistic regression
 estimator = LogisticRegression(random_state=15)
 estimator_pipe = create_pipeline('Logistic Regression', estimator, use_SMOTE=True)
@@ -805,9 +824,9 @@ print("Mean recall CV score:" + str(np.round(new_LR_cv_recall.mean(), 4)))
 
 # Most metrics about the same, it already performed better than other models
 
-# ==========================================================
+# =======================================================================================
 # Hyperparameter tuning SVM
-# ==========================================================
+# =======================================================================================
 
 #grid = GridSearchCV(svm, param_grid, refit = True, verbose =0,cv=10)
 
