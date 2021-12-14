@@ -96,7 +96,7 @@ Explored more models post-SMOTE. Used cross-validation to calculate recall and f
 As seen below, logistic regression, and SVM had the highest recall, followed by gradient boosting, XGBoost, and KNN. Decision tree and random forest performed poorly both with recall and f1 score. Will perform hyperparameter tuning on the logistic regression, SVM, and XGBoost models:
 
 ## Hyperparameter Tuning
-I chose to optimize based on f1 as this is a well-rounded measure of performance that incorporates recall and precision. The argument could be made to optimize solely on recall so as to minimize false negatives. This can be explored later. 
+I chose to optimize hyperparameters based on f1 score as this is a well-rounded measure of performance that incorporates recall and precision. The argument could be made to optimize solely on recall so as to minimize false negatives. This can be explored later. 
 
 ### XGBoost
 #### Weighted XGBoost (no SMOTE)
@@ -106,6 +106,14 @@ Hyperparameter tuning values:
 - learning_rate': [0.1, 0.01, 0.05]
 - scale_pos_weight': weights
   - Like the weighted logistic regression, I based the 'weights' on the inverse class distribution in the training data. In this case, there are 194 individuals with stroke and 3894 without a stroke. So the inverse class distribution is 3894/194 = 20. Then for hyperparameter tuning, I added 4 more values to try: the inverse class distribution +/- 25% and +/- 50%. 
+
+#### XGBoost non-weighted, with SMOTE
+Hyperparameter tuning values same as Weighted XGBoost without SMOTE but without the weight metric 
+
+#### Weighted XGBoost with SMOTE
+Hyperparameter tuning values same as Weighted XGBoost without SMOTE 
+
+#### Combined XGBoost Results
 
 ## Potential Next Steps
 - Productionize chosen model
