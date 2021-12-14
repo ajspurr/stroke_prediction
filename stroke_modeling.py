@@ -811,10 +811,42 @@ grid_search_obj_xgb_s, return_results_xgb_s = gridsearch_results(model_name=mode
                                                                  scoring=['f1', 'recall'], refit='f1', 
                                                                  n_jobs=10, cv=10, verbose=True)
 
+
+# =============================
+# Weighted XGBoost with hyperparameter tuning WITH SMOTE
+# =============================
+model_name = 'xgboost_w_s'
+model_display_name = 'Weighted XGBoost (SMOTE)'
+
+xgb_model_w_s = XGBClassifier(objective='binary:logistic', nthread=4, seed=15, use_label_encoder=False, eval_metric='logloss')
+xgb_pipeline_w_s  = create_pipeline(model_name, xgb_model_w_s, use_SMOTE=True)
+
+# One way to optimize XGBoost for an imbalanced dataset is to set the 'scale_pos_weight' to the inverse of the class distribution
+# https://machinelearningmastery.com/xgboost-for-imbalanced-classification/
+num_pos_target = sum(y_train == 1) # minority class
+num_neg_target = sum(y_train == 0) # majority class
+inv_class_dist = num_neg_target / num_pos_target
+
+# Will use gridsearch to test inv_class_dist plus nearby values
+weights = [inv_class_dist*0.5, inv_class_dist*0.75, inv_class_dist, inv_class_dist*1.25, inv_class_dist*1.5]
+
+xgb_w_s_parameters = {model_name + '__max_depth': range (2, 10, 1),
+                      model_name + '__n_estimators': range(60, 220, 40), 
+                      model_name + '__learning_rate': [0.1, 0.01, 0.05], 
+                      model_name + '__scale_pos_weight': weights}
+
+grid_search_obj_xgb_w_s_, return_results_xgb_w_s_ = gridsearch_results(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=xgb_pipeline_w_s, 
+                                                             param_grid=xgb_w_s_parameters, 
+                                                             scoring=['f1', 'recall'], refit='f1', 
+                                                             n_jobs=10, cv=10, verbose=True)
+
+
 # =============================
 # Combine XGBoost with SMOTE, XGBoost tuned and weighted with no SMOTE, XGBoost tuned with SMOTE
 # =============================
-combined_xgb = pd.concat([final_results.T['XGBoost'], return_results_xgb.T, return_results_xgb_s.T], axis=1, join='inner')
+combined_xgb = pd.concat([final_results.T['XGBoost'], return_results_xgb.T, return_results_xgb_s.T, return_results_xgb_w_s_.T], axis=1, join='inner')
 #final_results = final_results.apply(pd.to_numeric)
 sns.heatmap(data=combined_xgb, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
