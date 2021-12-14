@@ -98,5 +98,5 @@ As seen below, logistic regression, and SVM had the highest recall, followed by 
 ## Potential Next Steps
 - Productionaize chosen model
 - Improve models
-  - Hyperparamter tuning pre-SMOTE (explore how to optimize other models for unbalanced data)
+  - Hyperparamter tuning on models without using SMOTE (explore how to optimize other models for unbalanced data)
   - Explore feature engineering and feature importance
