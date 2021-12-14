@@ -91,5 +91,5 @@ The heatmap below compares the performance metrics of logistic regression, weigh
 ## Potential Next Steps
 - Productionaize chosen model
 - Improve models
-  - Hyperparamter tuning pre-SMOTE
+  - Hyperparamter tuning pre-SMOTE (explore how to optimize other models for unbalanced data)
   - Explore feature engineering and feature importance
