@@ -88,6 +88,13 @@ The heatmap below compares the performance metrics of logistic regression, weigh
 
 <p align="center"><img src="/output/models/lr_all_metrics.png" width="900"/></p> 
 
+## More Models
+Explored more models post-SMOTE. Used cross-validation to calculate recall and f1 scores. 
+
+<p align="center"><img src="/output/models/metrics_multiple_models_smote.png" width="900"/></p> 
+
+As seen below, logistic regression, and SVM had the highest recall, followed by gradient boosting, XGBoost, and KNN. Decision tree and random forest performed poorly both with recall and f1 score. Will perform hyperparameter tuning on the logistic regression, SVM, and XGBoost models:
+
 ## Potential Next Steps
 - Productionaize chosen model
 - Improve models
