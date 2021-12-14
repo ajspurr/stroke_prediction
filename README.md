@@ -95,6 +95,9 @@ Explored more models post-SMOTE. Used cross-validation to calculate recall and f
 
 As seen below, logistic regression, and SVM had the highest recall, followed by gradient boosting, XGBoost, and KNN. Decision tree and random forest performed poorly both with recall and f1 score. Will perform hyperparameter tuning on the logistic regression, SVM, and XGBoost models:
 
+## Hyperparameter Tuning
+I chose to optimize based on f1 as this is a well-rounded measure of performance that incorporates recall and precision. The argument could be made to optimize solely on recall so as to minimize false negatives. This can be explored later. 
+
 ### XGBoost
 #### Weighted XGBoost (no SMOTE)
 Hyperparameter tuning values: 
@@ -107,5 +110,7 @@ Hyperparameter tuning values:
 ## Potential Next Steps
 - Productionize chosen model
 - Improve models
-  - Hyperparamter tuning on models without using SMOTE (explore how to optimize other models for unbalanced data)
+  - Explore hyperparameter tuning more
+    - Explore further on how to optimize models for unbalanced data
+    - Using recall as optimization metric rather than f1
   - Explore feature engineering and feature importance
