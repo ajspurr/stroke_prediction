@@ -557,8 +557,8 @@ lr_final_results = lr_final_results.apply(pd.to_numeric)
 sns.heatmap(data=lr_final_results.T, annot=True, cmap="Blues", fmt=".3")
 plt.yticks(rotation=0)  # Rotate y-tick labels to be horizontal
 plt.title('Comparison of Three Logistic Regression Models')
-save_filename = 'lr_all_metrics'
-save_image(output_dir, save_filename, bbox_inches='tight')
+#save_filename = 'lr_all_metrics'
+#save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 # Other output
@@ -607,9 +607,6 @@ for key in models_dict.keys():
     models_dict[key]['Pipeline'] = create_pipeline(key, models_dict[key]['Model'], use_SMOTE=True)
 
 
-# =========================================================================================================================================================
-# =========== TEST COMBINING CV SCORES INTO ONE LOOP ======================================================================================================
-# =========================================================================================================================================================
 # Perform cross validation (f1 and recall) for each model 
 for key in models_dict.keys():
     scores = cross_validate(models_dict[key]['Pipeline'], X, y, cv=10, scoring=['f1', 'recall'])
@@ -624,9 +621,6 @@ for key in models_dict.keys():
 print('\nMean recall scores:')
 for key in models_dict.keys():
     print(key, "{0:.4f}".format(models_dict[key]['CV Scores (recall)'].mean()))
-
-# =========================================================================================================================================================
-
 
 # To get full evaluation metrics on each model, need to fit first 
 for key in models_dict.keys():
@@ -645,7 +639,7 @@ for key in models_dict.keys():
     print()
 
 # Combine most important results into one dataframe
-final_metrics = ['Accuracy', 'Recall (CV)', 'Specificity', 'Precision (avg)', 'NPV', 'AUROC', 'f1 (CV)']
+final_metrics = ['Accuracy', 'Sensitivity (recall)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1']
 final_results = pd.DataFrame(columns=final_metrics, index=model_names)
 
 for row in final_results.index:
@@ -655,12 +649,13 @@ for row in final_results.index:
     final_results_row = final_results.loc[row]
      
     final_results_row['Accuracy'] = model_data['Results']['Accuracy']
-    final_results_row['Recall (CV)'] = round(model_data['CV Scores (recall)'].mean(), 4)
+    final_results_row['Sensitivity (recall)'] = round(model_data['CV Scores (recall)'].mean(), 4)
     final_results_row['Specificity'] = model_data['Results']['Specificity']
-    final_results_row['Precision (avg)'] = model_data['Results']['Average precision']
-    final_results_row['NPV'] = model_data['Results']['NPV']
     final_results_row['AUROC'] = model_data['Results']['AUROC']
-    final_results_row['f1 (CV)'] = round(model_data['CV Scores (f1)'].mean(), 4)
+    final_results_row['PPV (precision)'] = model_data['Results']['PPV (precision)']
+    final_results_row['NPV'] = model_data['Results']['NPV']
+    final_results_row['AUPRC'] = model_data['Results']['Average AUPRC']
+    final_results_row['f1'] = round(model_data['CV Scores (f1)'].mean(), 4)
   
 # Display final results table
 # pd.set_option("display.max_columns", len(final_results.columns))
@@ -669,7 +664,11 @@ for row in final_results.index:
 
 # Create heatmap of final results to visualize best model, need to convert dataframe to numeric, for some reason it wasn't
 final_results = final_results.apply(pd.to_numeric)
-sns.heatmap(data=final_results, annot=True, cmap="Blues", fmt=".3")
+sns.heatmap(data=final_results.T, annot=True, cmap="Blues", fmt=".3")
+plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
+plt.title('Model Metrics post-SMOTE')
+save_filename = 'metrics_multiple_models_smote'
+save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 # Logistic Regression Ranks close to the top in all metrics, let's look at the rest and reset the heatmap colors
@@ -683,46 +682,100 @@ plt.show()
 # f1 is an important metric in imbalanced datasets such as this one
 new_results_2 = new_results.copy().drop(['Random Forest', 'Decision Tree', 'KNN'])
 sns.heatmap(data=new_results_2, annot=True, cmap="Blues", fmt=".3")
+plt.yticks(rotation=0)  # Rotate y-tick labels to be horizontal
 plt.show()
 
 # SVM with better recall but worse f1 than both boosting algorithms, will keep SVM and XGBoost
 next_step_results = final_results.copy().drop(['Random Forest', 'Decision Tree', 'KNN', 'Gradient Boosting'])
 sns.heatmap(data=next_step_results, annot=True, cmap="Blues", fmt=".3")
+plt.yticks(rotation=0)  # Rotate y-tick labels to be horizontal
 plt.show()
 
 # ====================================================================================================================
 # Hyperparameter tuning for Logistic Regression, SVM, XGBoost
 # ====================================================================================================================
+# =============================
+# GridSearchCV attributes
+# =============================
+# The optimized parameters found by GridSearchCV: grid_search_obj.best_params_
+# The pipeline or model with optimized parameters: grid_search_obj.best_estimator_
+# The entirety of the gridsearch results: grid_search_test.cv_results_
+# The best score of whatever metric you chose to select the best parameters (what you set 'refit' to): grid_search_test.best_score_
+# The model parameter names to be used when making the GridSearchCV object: model_obj.get_params().keys()
+
+# =============================
+# Function organizing GridSearchCV results
+# =============================
+# Function assumes scoring=['f1', 'recall'] and that refit='f1'
+# The recall and precision that are returned are the mean cross-validated versions
+def gridsearch_results(model_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True):
+    # Create GridSearch object and fit data
+    grid_search = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, refit=refit, n_jobs=n_jobs, cv=cv, verbose=verbose)
+    grid_search.fit(X_train, y_train)
+    
+    # Access scores of best estimator
+    results = grid_search.cv_results_
+    
+    # Gets the index of the best f1 score (to be used later as well)
+    best_estimator_f1_index = np.nonzero(results['rank_test_f1'] == 1)[0][0]
+    
+    # Uses the index to select the best f1 score, which was used to select the best estimator
+    best_estimator_f1 = results['mean_test_f1'][best_estimator_f1_index]
+    
+    # To get the recall score of the best estimator, use the same index as the best f1, since that corresponds to the same estimator
+    best_estimator_recall = results['mean_test_recall'][best_estimator_f1_index]
+    
+    # Using optimal model from GridSearch results, fit and run model again so that I can run my results functions
+    pipeline_gs = grid_search.best_estimator_
+    pipeline_gs.fit(X_train, y_train)
+    y_pred_gs = pipeline_gs.predict(X_valid)
+    
+    # Get results using my function
+    results_gs, conmat_gs = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_gs, pipeline_gs, model_name, create_graphs=False)
+    
+    # Combine most important results into one dataframe
+    return_metrics = ['Accuracy', 'Sensivity (CV recall)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1 (CV)']
+    return_results = pd.DataFrame(columns=return_metrics, index=[model_name])
+    return_results['Accuracy'] = results_gs['Accuracy']    
+    return_results['Sensivity (CV recall)'] = best_estimator_recall
+    return_results['Specificity'] = results_gs['Specificity']
+    return_results['AUROC'] = results_gs['AUROC']
+    return_results['PPV (precision)'] = results_gs['PPV (precision)']
+    return_results['NPV'] = results_gs['NPV']
+    return_results['AUPRC'] = results_gs['AUPRC']
+    return_results['f1 (CV)'] = best_estimator_f1
+    
+    return grid_search, return_results
+
 # ==========================================================
 # Hyperparameter tuning XGBoost
 # ==========================================================
 # https://www.mikulskibartosz.name/xgboost-hyperparameter-tuning-in-python-using-grid-search/
-estimator = XGBClassifier(objective='binary:logistic', nthread=4, seed=42, use_label_encoder=False, eval_metric='logloss')
-estimator_pipe = create_pipeline('XGBoost', estimator, use_SMOTE=True)
-parameters = {'XGBoost__max_depth': range (2, 10, 1), 'XGBoost__n_estimators': range(60, 220, 40), 'XGBoost__learning_rate': [0.1, 0.01, 0.05]}
-grid_search = GridSearchCV(estimator=estimator_pipe, param_grid=parameters, scoring = 'f1', n_jobs = 10, cv = 10, verbose=True)
+# https://towardsdatascience.com/binary-classification-xgboost-hyperparameter-tuning-scenarios-by-non-exhaustive-grid-search-and-c261f4ce098d
 
-#estimator_pipe.get_params().keys()
+# =============================
+# Weighted XGBoost (without SMOTE)
+# =============================
+xgb_model = XGBClassifier(objective='binary:logistic', nthread=4, seed=15, use_label_encoder=False, eval_metric='logloss')
+xgb_pipeline = create_pipeline('XGBoost', xgb_model, use_SMOTE=False)
 
-grid_search.fit(X_train, y_train)
+xgb_parameters = {'XGBoost__max_depth': range (8, 10, 1), 'XGBoost__n_estimators': range(60, 140, 40), 'XGBoost__learning_rate': [0.1, 0.01]}
+grid_search_obj_xgb, return_results_xgb = gridsearch_results(model_name='Weighted XGBoost', estimator=xgb_pipeline, param_grid=xgb_parameters, scoring=['f1', 'recall'], refit='f1', n_jobs=10, cv=3, verbose=True)
 
-print(grid_search.best_params_)
-# {'XGBoost__learning_rate': 0.01,
-#  'XGBoost__max_depth': 9,
-#  'XGBoost__n_estimators': 100}
-new_XGB_pipeline = grid_search.best_estimator_
+return_results_xgb.T
 
-new_XGB_pipeline.fit(X_train, y_train)
-y_pred_new_XGB = new_XGB_pipeline.predict(X_valid)
-results, conmat = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_new_XGB, new_XGB_pipeline, 'XGB (new)', create_graphs=False)
+# =============================
+# With SMOTE
+# =============================
+xgb_model_smote = XGBClassifier(objective='binary:logistic', nthread=4, seed=15, use_label_encoder=False, eval_metric='logloss')
+xgb_pipeline_smote = create_pipeline('XGBoost', xgb_model_smote, use_SMOTE=True)
 
-new_XGB_cv_f1 = cross_val_score(new_XGB_pipeline, X, y, cv=10, scoring='f1')
-new_XGB_cv_recall = cross_val_score(new_XGB_pipeline, X, y, cv=10, scoring='recall')
+xgb_smote_parameters = {'XGBoost__max_depth': range (8, 10, 1), 'XGBoost__n_estimators': range(60, 140, 40), 'XGBoost__learning_rate': [0.1, 0.01]}
+grid_search_obj_xgb_s, return_results_xgb_s = gridsearch_results(model_name='XGBoost (SMOTE)', estimator=xgb_pipeline_smote, param_grid=xgb_smote_parameters, scoring=['f1', 'recall'], refit='f1', n_jobs=10, cv=3, verbose=True)
 
-print("Mean f1 CV score:" + str(np.round(new_XGB_cv_f1.mean(), 4)))
-print("Mean recall CV score:" + str(np.round(new_XGB_cv_recall.mean(), 4)))
+return_results_xgb_s.T
 
-# Most metrics about the same other than CV recall, which had a large improvement from ~0.39 to ~0.50
+
 
 
 # ==========================================================
