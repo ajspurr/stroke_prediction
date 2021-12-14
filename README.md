@@ -114,6 +114,9 @@ Hyperparameter tuning values same as Weighted XGBoost without SMOTE but without 
 Hyperparameter tuning values same as Weighted XGBoost without SMOTE 
 
 #### Combined XGBoost Results
+Weighted XGBoost performed better than XGBoost with SMOTE in terms of both recall and f1 score. I wanted to test whether using both weights and SMOTE to deal an imbalanced dataset would improve results, but it did not perform better than just using weights. 
+
+<p align="center"><img src="/output/models/combined_metrics_xgb.png" width="900"/></p> 
 
 ## Potential Next Steps
 - Productionize chosen model
