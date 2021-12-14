@@ -844,13 +844,13 @@ grid_search_obj_xgb_w_s_, return_results_xgb_w_s_ = gridsearch_results(model_nam
 
 
 # =============================
-# Combine XGBoost with SMOTE, XGBoost tuned and weighted with no SMOTE, XGBoost tuned with SMOTE
+# Combine all XGBoost results
 # =============================
 combined_xgb = pd.concat([final_results.T['XGBoost'], return_results_xgb.T, return_results_xgb_s.T, return_results_xgb_w_s_.T], axis=1, join='inner')
 #final_results = final_results.apply(pd.to_numeric)
 sns.heatmap(data=combined_xgb, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
-plt.title('XGB Combined Metrics')
+plt.title('XGBoost Combined Metrics')
 save_filename = 'combined_metrics_xgb'
 save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
@@ -859,29 +859,52 @@ plt.show()
 # =======================================================================================
 # Hyperparameter tuning Logistic Regression
 # =======================================================================================
-# Logistic regression
-estimator = LogisticRegression(random_state=15)
-estimator_pipe = create_pipeline('Logistic Regression', estimator, use_SMOTE=True)
-parameters = {'Logistic Regression__C': np.logspace(-3, 3, 20), 'Logistic Regression__penalty': ['l2']}
-grid_search = GridSearchCV(estimator=estimator_pipe, param_grid=parameters, scoring = 'f1', n_jobs = 10, cv = 10, verbose=True)
+# https://machinelearningknowledge.ai/hyperparameter-tuning-with-sklearn-gridsearchcv-and-randomizedsearchcv/
+# =============================
+# Weighted Logistic Regression with hyperparameter tuning without SMOTE
+# =============================
+model_name = 'log_reg_w'
+model_display_name = 'Weighted Log Reg'
 
-grid_search.fit(X_train, y_train)
+lr_model = LogisticRegression(random_state=15)
+lr_pipeline = create_pipeline(model_name, lr_model, use_SMOTE=False)
 
-print(grid_search.best_params_)
-# {'Logistic Regression__C': 0.1623776739188721, 'Logistic Regression__penalty': 'l2'}
+# Calculate baseline weight parameters as in Weighted Logistic Regression much higher in code
+num_pos_target = sum(y_train == 1) # minority class
+num_neg_target = sum(y_train == 0) # majority class
+ratio_pos_to_neg = num_pos_target / num_neg_target
 
-new_LR_pipeline = grid_search.best_estimator_
+# Set up weights
+weights = [{0:ratio_pos_to_neg, 1:(1/ratio_pos_to_neg)}]
+new_ratio = ratio_pos_to_neg*0.5
+weights.append({0:new_ratio, 1:(1/new_ratio)})
+new_ratio = ratio_pos_to_neg*0.75
+weights.append({0:new_ratio, 1:(1/new_ratio)})
+new_ratio = ratio_pos_to_neg*1.25
+weights.append({0:new_ratio, 1:(1/new_ratio)})
+new_ratio = ratio_pos_to_neg*1.5
+weights.append({0:new_ratio, 1:(1/new_ratio)})
 
-new_LR_pipeline.fit(X_train, y_train)
-y_pred_new_LR = new_LR_pipeline.predict(X_valid)
-results, conmat = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_new_LR, new_LR_pipeline, 'log_reg_tuned', 'LR (tuned)', create_graphs=False)
 
-new_LR_cv_f1 = cross_val_score(new_LR_pipeline, X, y, cv=10, scoring='f1')
-new_LR_cv_recall = cross_val_score(new_LR_pipeline, X, y, cv=10, scoring='recall')
-print("Mean f1 CV score:" + str(np.round(new_LR_cv_f1.mean(), 4)))
-print("Mean recall CV score:" + str(np.round(new_LR_cv_recall.mean(), 4)))
+# Fit weighted logistic regression model
+log_reg_w = LogisticRegression(class_weight=weights, random_state=15)
+fit_w = log_reg_w.fit(X_train_processed, y_train)
 
-# Most metrics about the same, it already performed better than other models
+lr_parameters = {model_name + '__C': np.logspace(-3, 3, 20), 
+                 model_name + '__penalty': ['l2'],
+                 model_name + '__class_weight' : weights}
+
+grid_search_obj_lr, return_results_lr = gridsearch_results(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=lr_pipeline, 
+                                                             param_grid=lr_parameters, 
+                                                             scoring=['f1', 'recall'], refit='f1', 
+                                                             n_jobs=10, cv=10, verbose=True)
+
+return_results_lr.T
+
+# LEFT OFF HERE
+
 
 # =======================================================================================
 # Hyperparameter tuning SVM
