@@ -101,10 +101,10 @@ I chose to optimize hyperparameters based on f1 score as this is a well-rounded 
 ### XGBoost
 #### Weighted XGBoost (no SMOTE)
 Hyperparameter tuning values: 
-- max_depth': range (2, 10, 1)
-- n_estimators': range(60, 220, 40)
-- learning_rate': [0.1, 0.01, 0.05]
-- scale_pos_weight': weights
+- max_depth: range (2, 10, 1)
+- n_estimators: range(60, 220, 40)
+- learning_rate: [0.1, 0.01, 0.05]
+- scale_pos_weight: weights
   - Like the weighted logistic regression, I based the 'weights' on the inverse class distribution in the training data. In this case, there are 194 individuals with stroke and 3894 without a stroke. So the inverse class distribution is 3894/194 = 20. Then for hyperparameter tuning, I added 4 more values to try: the inverse class distribution +/- 25% and +/- 50%. 
 
 #### XGBoost non-weighted, with SMOTE
