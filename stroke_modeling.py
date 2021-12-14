@@ -140,7 +140,7 @@ def create_pipeline(model_name, model, use_SMOTE):
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
 def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model, model_name, 
-                   create_graphs=True, combine_graphs=True, round_results=3):  
+                   model_display_name, create_graphs=True, combine_graphs=True, round_results=3):  
     # =============================
     # Accuracy
     # =============================
@@ -197,7 +197,7 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
         PPV = TP / (TP+FP) # Same as precision
     except:
         PPV = 0
-        print("While evaluating model " + model_name + ", encountered 'ZeroDivisionError' while calculating PPV, so setting PPV to zero")
+        print("While evaluating model " + model_display_name + ", encountered 'ZeroDivisionError' while calculating PPV, so setting PPV to zero")
     NPV = TN / (TN+FN)
     f1_manual = (2*TP) / ((2*TP) + FP + FN)
     
@@ -234,16 +234,16 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     # =============================
     if (create_graphs):
         if (combine_graphs):
-            plot_model_metrics_combined(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline)
+            plot_model_metrics_combined(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline)
         else:
-            plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline)
+            plot_model_metrics(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline)
     
     return metrics, conmat_df
 
 # Takes evalution metrics from evaluate_model() and plots confusion matrix, ROC, PRC, and precision/recall vs. threshold
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
-def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
+def plot_model_metrics(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
     # =============================
     # Heatmap of confusion matrix
     # =============================
@@ -260,7 +260,7 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
     sns.heatmap(conmat_df_perc, annot=label, cmap="Blues", fmt="", vmin=0, cbar=False)
     plt.ylabel('True outcome')
     plt.xlabel('Predicted outcome')
-    plt.title(f'{model_name} Confusion Matrix')
+    plt.title(f'{model_display_name} Confusion Matrix')
     plt.show() 
     
     # =============================
@@ -273,7 +273,7 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
     plt.fill_between(fpr, tpr, facecolor='orange', alpha=0.7)
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title(f'{model_name} ROC Curve (AUROC = {AUC:.2f})')
+    plt.title(f'{model_display_name} ROC Curve (AUROC = {AUC:.2f})')
     #plt.text(0.95, 0.05, f'AUC = {AUC:.2f}', ha='right', fontsize=12, weight='bold', color='blue')
     plt.show()
     
@@ -284,7 +284,7 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
     plt.plot(recall, precision, marker='.', label='model', color="blue") # label=f'AUPRC: {AUPRC:.2f}'
     plt.xlabel('Recall')
     plt.ylabel('Precision')
-    plt.title(f'{model_name} Precision Recall Curve (AUPRC: {AUPRC:.2f})')
+    plt.title(f'{model_display_name} Precision Recall Curve (AUPRC: {AUPRC:.2f})')
     plt.plot([0, 1], [baseline, baseline], linestyle='--', label='Baseline', color="orange")
     plt.legend()
     plt.show()
@@ -292,7 +292,7 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
     # Plot precision and recall for each threshold
     plt.plot(prc_thresholds, precision[:-1], label='Precision', c='orange')
     plt.plot(prc_thresholds, recall[:-1],label='Recall', c='b')
-    plt.title(f'{model_name} Precision/Recall vs. Threshold')
+    plt.title(f'{model_display_name} Precision/Recall vs. Threshold')
     plt.ylabel('Precision/Recall Value')
     plt.xlabel('Thresholds')
     plt.legend()
@@ -301,7 +301,7 @@ def plot_model_metrics(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precis
 
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
-def plot_model_metrics_combined(model_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
+def plot_model_metrics_combined(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
     # Create figure, gridspec, list of axes/subplots mapped to gridspec location
     fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=2, num_cols=2, figsize=(14, 8))
    
@@ -361,7 +361,7 @@ def plot_model_metrics_combined(model_name, conmat, conmat_df_perc, fpr, tpr, AU
     axis.set_ylim([0,1])
     
     # Finalize figure formatting and export
-    fig.suptitle(f'{model_name} Evaluation Metrics', fontsize=24)
+    fig.suptitle(f'{model_display_name} Evaluation Metrics', fontsize=24)
     #fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
     plt.subplots_adjust(hspace=0.3, wspace=0.2) # Increase spacing between plots if tight_layout doesn't work
     save_filename = 'eval_metrics_' + model_name
@@ -435,7 +435,7 @@ fit = log_reg.fit(X_train_processed, y_train)
 y_pred = log_reg.predict(X_valid_processed)
 
 # Evaluate model
-results, conf_mat = evaluate_model(X_train_processed, X_valid_processed, y_train, y_valid, y_pred, log_reg, 'Log Reg')
+results, conf_mat = evaluate_model(X_train_processed, X_valid_processed, y_train, y_valid, y_pred, log_reg, 'log_reg', 'Log Reg')
 
 # =============================
 # Model with weighted logistic regression
@@ -458,7 +458,7 @@ fit_w = log_reg_w.fit(X_train_processed, y_train)
 y_pred_w = log_reg_w.predict(X_valid_processed)
 
 # Evaluate model
-results_w, conf_mat_w = evaluate_model(X_train_processed, X_valid_processed, y_train, y_valid, y_pred_w, log_reg_w, 'Log Reg (weighted)')
+results_w, conf_mat_w = evaluate_model(X_train_processed, X_valid_processed, y_train, y_valid, y_pred_w, log_reg_w, 'log_reg_weighted', 'Log Reg (weighted)')
 
 # =============================
 # Model after using SMOTE
@@ -474,7 +474,7 @@ fit_s = log_reg_s.fit(X_train_resampled, y_train_resampled)
 y_pred_s = log_reg_s.predict(X_valid_processed)
 
 # Evaluate model
-results_s, conmat_s = evaluate_model(X_train_resampled, X_valid_processed, y_train_resampled, y_valid, y_pred_s, log_reg_s, 'Log Reg (w/ SMOTE)')
+results_s, conmat_s = evaluate_model(X_train_resampled, X_valid_processed, y_train_resampled, y_valid, y_pred_s, log_reg_s, 'log_reg_smote', 'Log Reg (w/ SMOTE)')
 
 
 # =============================
@@ -635,7 +635,7 @@ for key in models_dict.keys():
 
 # Get full evaluation metrics on each model
 for key in models_dict.keys():
-    results, conmat = evaluate_model(X_train, X_valid, y_train, y_valid, models_dict[key]['Predictions'], models_dict[key]['Pipeline'], key, create_graphs=False)
+    results, conmat = evaluate_model(X_train, X_valid, y_train, y_valid, models_dict[key]['Predictions'], models_dict[key]['Pipeline'], key, key, create_graphs=False)
     models_dict[key]['Results'] = results
 
 # Debugging - see all thresholds used
@@ -705,8 +705,8 @@ plt.show()
 # =============================
 # The optimized parameters found by GridSearchCV: grid_search_obj.best_params_
 # The pipeline or model with optimized parameters: grid_search_obj.best_estimator_
-# The entirety of the gridsearch results: grid_search_test.cv_results_
-# The best score of whatever metric you chose to select the best parameters (what you set 'refit' to): grid_search_test.best_score_
+# The entirety of the gridsearch results: grid_search_obj.cv_results_
+# The best score of whatever metric you chose to select the best parameters (what you set 'refit' to): grid_search_obj.best_score_
 # The model parameter names to be used when making the GridSearchCV object: model_obj.get_params().keys()
 
 # =============================
@@ -716,7 +716,7 @@ plt.show()
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
 # The recall and precision that are returned are the mean cross-validated values
-def gridsearch_results(model_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True):
+def gridsearch_results(model_name, model_display_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True):
     # Create GridSearch object and fit data
     grid_search = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, refit=refit, n_jobs=n_jobs, cv=cv, verbose=verbose)
     grid_search.fit(X_train, y_train)
@@ -739,11 +739,11 @@ def gridsearch_results(model_name, estimator, param_grid, scoring, refit, n_jobs
     y_pred_gs = pipeline_gs.predict(X_valid)
     
     # Get results using my function
-    results_gs, conmat_gs = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_gs, pipeline_gs, model_name, create_graphs=False)
+    results_gs, conmat_gs = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_gs, pipeline_gs, model_name, model_display_name, create_graphs=False)
     
     # Combine most important results into one dataframe
     return_metrics = ['Accuracy', 'Sensitivity (recall, CV)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1 (CV)']
-    return_results = pd.DataFrame(columns=return_metrics, index=[model_name])
+    return_results = pd.DataFrame(columns=return_metrics, index=[model_display_name])
     return_results['Accuracy'] = results_gs['Accuracy']    
     return_results['Sensitivity (recall, CV)'] = best_estimator_recall
     return_results['Specificity'] = results_gs['Specificity']
@@ -769,20 +769,47 @@ model_display_name = 'Weighted XGBoost'
 
 xgb_model = XGBClassifier(objective='binary:logistic', nthread=4, seed=15, use_label_encoder=False, eval_metric='logloss')
 xgb_pipeline = create_pipeline(model_name, xgb_model, use_SMOTE=False)
-xgb_parameters = {model_name + '__max_depth': range (8, 10, 1), 
-                  model_name + '__n_estimators': range(60, 140, 40), 
-                  model_name + '__learning_rate': [0.1, 0.01]}
-grid_search_obj_xgb, return_results_xgb = gridsearch_results(model_name=model_display_name, estimator=xgb_pipeline, param_grid=xgb_parameters, scoring=['f1', 'recall'], refit='f1', n_jobs=10, cv=3, verbose=True)
 
-xgb_pipeline.get_params().keys()
+# One way to optimize XGBoost for an imbalanced dataset is to set the 'scale_pos_weight' to the inverse of the class distribution
+# https://machinelearningmastery.com/xgboost-for-imbalanced-classification/
+num_pos_target = sum(y_train == 1) # minority class
+num_neg_target = sum(y_train == 0) # majority class
+inv_class_dist = num_neg_target / num_pos_target
+
+# Will use gridsearch to test inv_class_dist plus nearby values
+weights = [inv_class_dist*0.5, inv_class_dist*0.75, inv_class_dist, inv_class_dist*1.25, inv_class_dist*1.5]
+
+xgb_parameters = {model_name + '__max_depth': range (2, 10, 1), 
+                  model_name + '__n_estimators': range(60, 220, 40), 
+                  model_name + '__learning_rate': [0.1, 0.01, 0.05],
+                  model_name + '__scale_pos_weight': weights}
+
+grid_search_obj_xgb, return_results_xgb = gridsearch_results(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=xgb_pipeline, 
+                                                             param_grid=xgb_parameters, 
+                                                             scoring=['f1', 'recall'], refit='f1', 
+                                                             n_jobs=10, cv=10, verbose=True)
 
 # =============================
 # XGBoost with hyperparameter tuning with SMOTE
 # =============================
+model_name = 'xgboost_t_s'
+model_display_name = 'XGBoost (SMOTE)'
+
 xgb_model_smote = XGBClassifier(objective='binary:logistic', nthread=4, seed=15, use_label_encoder=False, eval_metric='logloss')
-xgb_pipeline_smote = create_pipeline('XGBoost', xgb_model_smote, use_SMOTE=True)
-xgb_smote_parameters = {'XGBoost__max_depth': range (8, 10, 1), 'XGBoost__n_estimators': range(60, 140, 40), 'XGBoost__learning_rate': [0.1, 0.01]}
-grid_search_obj_xgb_s, return_results_xgb_s = gridsearch_results(model_name='XGBoost (SMOTE)', estimator=xgb_pipeline_smote, param_grid=xgb_smote_parameters, scoring=['f1', 'recall'], refit='f1', n_jobs=10, cv=3, verbose=True)
+xgb_pipeline_smote = create_pipeline(model_name, xgb_model_smote, use_SMOTE=True)
+
+xgb_smote_parameters = {model_name + '__max_depth': range (2, 10, 1), 
+                        model_name + '__n_estimators': range(60, 220, 40), 
+                        model_name + '__learning_rate': [0.1, 0.01, 0.05]}
+
+grid_search_obj_xgb_s, return_results_xgb_s = gridsearch_results(model_name=model_name, 
+                                                                 model_display_name=model_display_name,
+                                                                 estimator=xgb_pipeline_smote, 
+                                                                 param_grid=xgb_smote_parameters, 
+                                                                 scoring=['f1', 'recall'], refit='f1', 
+                                                                 n_jobs=10, cv=10, verbose=True)
 
 # =============================
 # Combine XGBoost with SMOTE, XGBoost tuned and weighted with no SMOTE, XGBoost tuned with SMOTE
@@ -815,7 +842,7 @@ new_LR_pipeline = grid_search.best_estimator_
 
 new_LR_pipeline.fit(X_train, y_train)
 y_pred_new_LR = new_LR_pipeline.predict(X_valid)
-results, conmat = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_new_LR, new_LR_pipeline, 'LR (new)', create_graphs=False)
+results, conmat = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_new_LR, new_LR_pipeline, 'log_reg_tuned', 'LR (tuned)', create_graphs=False)
 
 new_LR_cv_f1 = cross_val_score(new_LR_pipeline, X, y, cv=10, scoring='f1')
 new_LR_cv_recall = cross_val_score(new_LR_pipeline, X, y, cv=10, scoring='recall')
