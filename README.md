@@ -110,7 +110,7 @@ Hyperparameter tuning values:
 ## Potential Next Steps
 - Productionize chosen model
 - Improve models
-  - Explore hyperparameter tuning more
+  - Expand hyperparameter tuning
     - Explore further on how to optimize models for unbalanced data
-    - Using recall as optimization metric rather than f1
+    - Use recall as optimization metric rather than f1
   - Explore feature engineering and feature importance
