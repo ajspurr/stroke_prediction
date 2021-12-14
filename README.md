@@ -87,3 +87,9 @@ Compared to weighted logistic regression, this model has a bit more balance of r
 The heatmap below compares the performance metrics of logistic regression, weighted logistic regression, and logistic regression post-SMOTE. As mentioned above, the most important metric is recall, as you do not want to miss any stroke cases. In this regard, weighted logistic regression was by far the best. Logistic regression post-SMOTE had a significantly lower recall with a minimal increase in precision (and no increase in AUPRC, or average precision). This also resulted in a higher f1 value, which is the harmonic mean of recall and precision. 
 
 <p align="center"><img src="/output/models/lr_all_metrics.png" width="900"/></p> 
+
+## Potential Next Steps
+- Productionaize chosen model
+- Improve models
+  - Hyperparamter tuning pre-SMOTE
+  - Explore feature engineering and feature importance
