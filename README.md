@@ -1,20 +1,26 @@
 # Stroke Prediction
 About 800,000 people in the United States have a stroke each year. It is a leading cause of serioues long-term disability ([CDC](https://www.cdc.gov/stroke/facts.htm)). Fortunately, there are actions you can take to prevent or lower your chances of having a stroke such as eating healthy, maintaining a healthy weight, excercising, abstaining from smoking, and limiting alcohol consumption. While everyone should follow these healthy habits, it can be helpful to identify individuals at high risk of stroke so they can pay especially close attention to their daily habits and make sure their chronic conditions (e.g. diabetes, hypertension) are well-controlled.
 
-In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset). I'll go through the major steps in Machine Learning to build a model to predict whether or not an individual is likely to have a stroke. This doesn't necessarily calculate a lifetime risk of stroke or chances of an acute stroke. But it can identify individuals who should take the preventive actions mentioned above.  
-
-#### Machine Learning Steps
-- Exploratory Data Analysis
-- Data Preparation
-- Model Training
-- Parameter Tuning
-- Stroke Prediction
-- Model Evaluation 
+In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset). I'll go through the major steps in Machine Learning to build and evaluate models to predict whether or not an individual is likely to have a stroke. This doesn't necessarily calculate a lifetime risk of stroke or chances of an acute stroke. But it can identify individuals who should take the preventive actions mentioned above.  
 
 ## Analysis Highlights
-- Highly unbalanced target class
+- Exploratory Data Analysis: 
+  - Dataset of 5110 individuals with features such as gender, age, BMI, and presence/absense of heart disease and hypertension
+  - Highly unbalanced target: only 5% had a stroke
+- Data Preparation
+  - Imputation, scaling, categorical variable encoding
 - Dealing with unbalanced binary classification
-- 
+  - Started with Logistic Regression model
+  - Compared implementing Weighted Logistic Regression vs. Logistic Regression w/ SMOTE (Sythetic Minority Oversampling TEchnique)
+- Choosing a Model
+  - Compared Logistic Regression, Decision Tree, Random Forest, SVM, Gradient Boosting, XGBoost, KNN (all w/ SMOTE)
+- Hyperparameter Tuning
+  - Chose top three performers: Logistic Regression, SVM, and XGBoost
+  - Used GridSearchCV to perform hyperparameter tuning optimized for f1 score, then for recall
+  - Continued to compare to strategies of dealing with imbalanced target (weighting and SMOTE)
+- Model Evaluation
+  - I chose to primarily evaluate models based on recall (sensitivity) as it is important to identify all individuals at high risk of stroke
+  - In addition to recall, I looked at precision and f1 as they focus more on the positive cases (stroke) than negative cases, which is important both clinically, and analytically as the positive cases are also the minority class.
 
 ## EDA
 Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/output/eda](/output/eda)
