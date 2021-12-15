@@ -9,8 +9,8 @@ Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/
 <p align="center"><img src="/output/eda/feature_summary.png" width="600"/></p>
 <br>
 2. Visualization of categorical variables below. Notably, the target variable (stroke) is highly imbalanced. 
-<br>
-<p align="center"><img src="/output/eda/combined_cat_counts.png" width="900"/></p>
+
+<br><p align="center"><img src="/output/eda/combined_cat_counts.png" width="900"/></p>
 <br>
 3. Stroke prevalence noticeably higher in those with hypertension, heart disease, and who have ever been married. Noticeably lower in children and individuals who have never worked.
 <br>
