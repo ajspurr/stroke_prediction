@@ -1,4 +1,8 @@
 # Stroke Prediction
+About 800,000 people in the United States have a stroke each year. It is a leading cause of serioues long-term disability ([CDC](https://www.cdc.gov/stroke/facts.htm)). Fortunately, there are actions you can take to prevent or lower your chances of having a stroke such as eating healthy, maintaining a healthy weight, excercising, abstaining from smoking, and limiting alcohol consumption. While everyone should follow these healthy habits, it can be helpful to identify individuals at high risk of stroke so they can pay especially close attention to their daily habits and make sure their chronic conditions (e.g. diabetes, hypertension) are well-controlled.
+
+In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset). I'll go through the major steps in Machine Learning to build a model to predict whether or not an individual is likely to have a stroke. This doesn't necessarily calculate a lifetime risk of stroke or chances of an acute stroke. But it can identify individuals who should take the preventive actions mentioned above.  
+
 Exploratory data analysis, data preprocessing, model training, parameter tuning, stroke prediction, and model evaluation using Kaggle stroke dataset: https://www.kaggle.com/fedesoriano/stroke-prediction-dataset
 
 ## EDA
