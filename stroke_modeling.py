@@ -675,11 +675,6 @@ for row in final_results.index:
     final_results_row['AUPRC'] = model_data['Results']['AUPRC']
     final_results_row['f1 (CV)'] = round(model_data['CV Scores (f1)'].mean(), 4)
   
-# Display final results table
-# pd.set_option("display.max_columns", len(final_results.columns))
-# final_results
-# pd.reset_option("display.max_columns")
-
 # Create heatmap of final results to visualize best model, need to convert dataframe to numeric, for some reason it wasn't
 final_results = final_results.apply(pd.to_numeric)
 sns.heatmap(data=final_results.T, annot=True, cmap="Blues", fmt=".3")
@@ -772,7 +767,6 @@ def gridsearch_results(model_name, model_display_name, estimator, param_grid, sc
 # =======================================================================================
 # https://www.mikulskibartosz.name/xgboost-hyperparameter-tuning-in-python-using-grid-search/
 # https://towardsdatascience.com/binary-classification-xgboost-hyperparameter-tuning-scenarios-by-non-exhaustive-grid-search-and-c261f4ce098d
-
 # =============================
 # Weighted XGBoost with hyperparameter tuning without SMOTE
 # =============================
@@ -822,7 +816,6 @@ grid_search_obj_xgb_s, return_results_xgb_s = gridsearch_results(model_name=mode
                                                                  param_grid=xgb_smote_parameters, 
                                                                  scoring=['f1', 'recall'], refit='f1', 
                                                                  n_jobs=10, cv=10, verbose=True)
-
 
 # =============================
 # Weighted XGBoost with hyperparameter tuning WITH SMOTE
@@ -986,7 +979,6 @@ grid_search_obj_svm, return_results_svm = gridsearch_results(model_name=model_na
                                                              scoring=['f1', 'recall'], refit='f1', 
                                                              n_jobs=10, cv=10, verbose=True)
 
-
 # =============================
 # SVM with hyperparameter tuning with SMOTE
 # =============================
@@ -1020,7 +1012,6 @@ save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 
-
 # ==========================================================
 # Combine best models
 # ==========================================================
@@ -1037,17 +1028,12 @@ save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 
-
-
-
-
-
 # ====================================================================================================================
 # Hyperparameter tuning for Logistic Regression, SVM, XGBoost, optimized for recall (as opposed to f1)
 # ====================================================================================================================
- 
+
 # =============================
-# BETTER Function organizing GridSearchCV results
+# More robust function organizing GridSearchCV results
 # =============================
 # Function assumes scoring=['f1', 'recall'] and that refit is either 'f1' or 'recall'
 # Parameter 'model_name' will be used for coding and saving images
@@ -1096,10 +1082,7 @@ def gridsearch_results_complete(model_name, model_display_name, estimator, param
         
     return_results['Specificity'] = results_gs['Specificity']
     return_results['AUROC'] = results_gs['AUROC']
-    
-    # return_results['PPV (precision)'] = results_gs['PPV (precision)']
-    # return_results['NPV'] = results_gs['NPV']
-    
+       
     PPV = results_gs['PPV (precision)']
     if (np.isnan(PPV)):
         return_results['PPV (precision)'] = 0
@@ -1117,7 +1100,7 @@ def gridsearch_results_complete(model_name, model_display_name, estimator, param
     return grid_search, return_results
 
 # =======================================================================================
-# Quick optimization Logistic Regression, SVM, XGBoost for recall (as opposed to f1)
+# Pre-calculate weights for all weighted models
 # =======================================================================================
 # Calculate weights for model tuning
 num_pos_target = sum(y_train == 1) # minority class
@@ -1166,8 +1149,6 @@ grid_search_obj_xgb_w_r, return_results_xgb_w_r = gridsearch_results_complete(mo
                                                              scoring=['f1', 'recall'], refit='recall', 
                                                              n_jobs=10, cv=10, verbose=3)
 
-return_results_xgb_w_r.T
-
 # =============================
 # XGBoost with hyperparameter tuning with SMOTE
 # =============================
@@ -1187,9 +1168,6 @@ grid_search_obj_xgb_s_r, return_results_xgb_s_r = gridsearch_results_complete(mo
                                                                  param_grid=xgb_smote_r_parameters, 
                                                                  scoring=['f1', 'recall'], refit='recall', 
                                                                  n_jobs=10, cv=10, verbose=True)
-
-return_results_xgb_s_r.T
-
 
 # =======================================================================================
 # Hyperparameter tuning Logistic Regression
@@ -1235,9 +1213,6 @@ grid_search_obj_lr_t_s_r, return_results_lr_t_s_r = gridsearch_results_complete(
                                                              scoring=['f1', 'recall'], refit='recall', 
                                                              n_jobs=10, cv=10, verbose=True)
 
-return_results_lr_t_s_r.T
-
-
 # =======================================================================================
 # Hyperparameter tuning SVM
 # =======================================================================================
@@ -1262,8 +1237,6 @@ grid_search_obj_svm_r, return_results_svm_r = gridsearch_results_complete(model_
                                                              scoring=['f1', 'recall'], refit='recall', 
                                                              n_jobs=10, cv=10, verbose=True)
 
-return_results_svm_r.T
-
 # =============================
 # SVM with hyperparameter tuning with SMOTE
 # =============================
@@ -1284,20 +1257,9 @@ grid_search_obj_svm_t_s_r, return_results_svm_t_s_r = gridsearch_results_complet
                                                              scoring=['f1', 'recall'], refit='recall', 
                                                              n_jobs=10, cv=10, verbose=2)
 
-return_results_svm_t_s_r.T
-
 # =======================================================================================
-# Combined Best Optimized for f1 with Optimized for recall
+# Combine models optimized for recall
 # =======================================================================================
-
-combined_opt_f1 = combined_opt.copy()
-
-# return_results_xgb_w_r.T
-# return_results_xgb_s_r.T
-# return_results_lr_r.T
-# return_results_lr_t_s_r.T
-# return_results_svm_r.T
-# return_results_svm_t_s_r.T
 
 combined_opt_recall = pd.concat([return_results_xgb_w_r.T, 
                                  return_results_xgb_s_r.T, 
@@ -1306,7 +1268,6 @@ combined_opt_recall = pd.concat([return_results_xgb_w_r.T,
                                  return_results_svm_r.T,
                                  return_results_svm_t_s_r.T], 
                                    axis=1, join='inner')
-
 
 combined_opt_recall.columns = ['Optimized Weighted XGB', 
                                   'Optimized XGB SMOTE', 
@@ -1321,7 +1282,3 @@ plt.title('Combined Optimized Models (for recall)')
 save_filename = 'combined_metrics_recall'
 save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
-
-
-
-combined_opt_f1_recall = pd.concat([combined_opt_f1, combined_opt_recall], axis=1, join='inner')
