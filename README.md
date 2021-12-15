@@ -13,16 +13,16 @@ Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/
 <br><p align="center"><img src="/output/eda/combined_cat_counts.png" width="900"/></p>
 <br>
 3. Stroke prevalence noticeably higher in those with hypertension, heart disease, and who have ever been married. Noticeably lower in children and individuals who have never worked.
-<br>
-<p align="center"><img src="/output/eda/combined_perc_stroke.png" width="900"/></p> 
+
+<br><p align="center"><img src="/output/eda/combined_perc_stroke.png" width="900"/></p> 
 <br>
 4. All continuous variables have somewhat normal or uniform distribution, 'avg_glucose_level' with a positive skew and somewhat bimodal and BMI with a slight positive skew. Features 'age' and 'avg_glucose_level' with observable difference in distribution in stroke vs. no stroke
-<br>
-<p align="center"><img src="/output/eda/combined_dist.png" width="900"/></p> 
+
+<br><p align="center"><img src="/output/eda/combined_dist.png" width="900"/></p> 
 <br>
 5. Calculated correlation between continuous variables, between categorical variables (Cramer's V), and between continuous and categorical (Correlation Ratio). Variable pairs with correlation greater than 0.5 plotted below heatmaps. No correlations greater than 0.7. 
-<br>
-<p align="center"><img src="/output/eda/combined_corr.png" width="900"/></p> 
+
+<br><p align="center"><img src="/output/eda/combined_corr.png" width="900"/></p> 
 
 <p align="center"><img src="/output/eda/combined_corr_details.png" width="900"/></p> 
 
