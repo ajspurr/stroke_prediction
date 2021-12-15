@@ -847,7 +847,7 @@ grid_search_obj_xgb_w_s_, return_results_xgb_w_s_ = gridsearch_results(model_nam
 # Combine all XGBoost results
 # =============================
 combined_xgb = pd.concat([final_results.T['XGBoost'], return_results_xgb.T, return_results_xgb_s.T, return_results_xgb_w_s_.T], axis=1, join='inner')
-combined_xgb.columns = ['Non-optimized XGB SMOTE', 'Optimized Weighted XGB', 'Optimized XGB SMOTE', 'Optimized Weight XGB SMOTE']
+combined_xgb.columns = ['Non-optimized XGB SMOTE', 'Optimized Weighted XGB', 'Optimized XGB SMOTE', 'Optimized Weighted XGB SMOTE']
 sns.heatmap(data=combined_xgb, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
 plt.title('XGBoost Combined Metrics (optimized for f1 score)')
@@ -1041,7 +1041,7 @@ plt.show()
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
 # The recall and precision that are returned are the mean cross-validated values
-def gridsearch_results(model_name, model_display_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True):
+def gridsearch_results_complete(model_name, model_display_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True):
     # Create GridSearch object and fit data
     grid_search = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, refit=refit, n_jobs=n_jobs, cv=cv, verbose=verbose)
     grid_search.fit(X_train, y_train)
@@ -1049,14 +1049,18 @@ def gridsearch_results(model_name, model_display_name, estimator, param_grid, sc
     # Access scores of best estimator
     results = grid_search.cv_results_
     
-    # Gets the index of the best f1 score (to be used later as well)
-    best_estimator_f1_index = np.nonzero(results['rank_test_f1'] == 1)[0][0]
+    # Gets the index of the best score (whatever is specified by parameter 'refit', which is the score that is optimized with GridSearch) 
+    # To be used later as well
+    best_primary_score_index = np.nonzero(results['rank_test_' + refit] == 1)[0][0]
     
-    # Uses the index to select the best f1 score, which was used to select the best estimator
-    best_estimator_f1 = results['mean_test_f1'][best_estimator_f1_index]
+    # Uses the index to select the best score, which was used to select the best estimator
+    best_primary_score = results['mean_test_' + refit][best_primary_score_index]
+    
+    # Determine the non-primary score
+    non_primary_score_str = [x for x in scoring if not x==refit][0]
     
     # To get the recall score of the best estimator, use the same index as the best f1, since that corresponds to the same estimator
-    best_estimator_recall = results['mean_test_recall'][best_estimator_f1_index]
+    best_non_primary_score = results['mean_test_' + non_primary_score_str][best_primary_score_index]
     
     # Using optimal model from GridSearch results, fit and run model again so that I can run my results functions
     pipeline_gs = grid_search.best_estimator_
@@ -1069,17 +1073,139 @@ def gridsearch_results(model_name, model_display_name, estimator, param_grid, sc
     # Combine most important results into one dataframe
     return_metrics = ['Accuracy', 'Sensitivity (recall, CV)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1 (CV)']
     return_results = pd.DataFrame(columns=return_metrics, index=[model_display_name])
-    return_results['Accuracy'] = results_gs['Accuracy']    
-    return_results['Sensitivity (recall, CV)'] = best_estimator_recall
+    return_results['Accuracy'] = results_gs['Accuracy']
+    
+    if (refit=='f1'):
+        return_results['Sensitivity (recall, CV)'] = best_non_primary_score
+        return_results['f1 (CV)'] = best_primary_score
+    else:
+        return_results['Sensitivity (recall, CV)'] = best_primary_score
+        return_results['f1 (CV)'] = best_non_primary_score
+        
     return_results['Specificity'] = results_gs['Specificity']
     return_results['AUROC'] = results_gs['AUROC']
     return_results['PPV (precision)'] = results_gs['PPV (precision)']
     return_results['NPV'] = results_gs['NPV']
     return_results['AUPRC'] = results_gs['AUPRC']
-    return_results['f1 (CV)'] = best_estimator_f1
     
     return grid_search, return_results
 
+# =======================================================================================
+# Quick optimization Logistic Regression, SVM, XGBoost for recall (as opposed to f1)
+# =======================================================================================
+# Calculate weights for model tuning
+num_pos_target = sum(y_train == 1) # minority class
+num_neg_target = sum(y_train == 0) # majority class
+inv_class_dist = num_neg_target / num_pos_target
+ratio_pos_to_neg = num_pos_target / num_neg_target
+
+weights_xgb = [inv_class_dist*0.5, inv_class_dist*0.75, inv_class_dist, inv_class_dist*1.25, inv_class_dist*1.5]
+
+weights_lr_svm = [{0:ratio_pos_to_neg, 1:(1/ratio_pos_to_neg)}]
+new_ratio = ratio_pos_to_neg*0.5
+weights_lr_svm.append({0:new_ratio, 1:(1/new_ratio)})
+new_ratio = ratio_pos_to_neg*0.75
+weights_lr_svm.append({0:new_ratio, 1:(1/new_ratio)})
+new_ratio = ratio_pos_to_neg*1.25
+weights_lr_svm.append({0:new_ratio, 1:(1/new_ratio)})
+new_ratio = ratio_pos_to_neg*1.5
+weights_lr_svm.append({0:new_ratio, 1:(1/new_ratio)})
+
+# =======================================================================================
+# Hyperparameter tuning XGBoost
+# =======================================================================================
+# =============================
+# Weighted XGBoost with hyperparameter tuning without SMOTE
+# =============================
+model_name = 'xgboost_w_r'
+model_display_name = 'Weighted XGBoost'
+
+xgb_w_r_model = XGBClassifier(objective='binary:logistic', nthread=4, seed=15, use_label_encoder=False, eval_metric='logloss')
+xgb_w_r_pipeline = create_pipeline(model_name, xgb_w_r_model, use_SMOTE=False)
+
+xgb_w_r_parameters = {model_name + '__max_depth': range (2, 10, 1), 
+                  model_name + '__n_estimators': range(60, 220, 40), 
+                  model_name + '__learning_rate': [0.1, 0.01, 0.05],
+                  model_name + '__scale_pos_weight': weights_xgb}
+
+# xgb_w_r_parameters = {model_name + '__max_depth': range (8, 10, 1), 
+#                   model_name + '__n_estimators': range(60, 100, 40), 
+#                   model_name + '__learning_rate': [0.01, 0.05],
+#                   model_name + '__scale_pos_weight': weights_xgb}
+
+grid_search_obj_xgb_w_r, return_results_xgb_w_r = gridsearch_results_complete(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=xgb_w_r_pipeline, 
+                                                             param_grid=xgb_w_r_parameters, 
+                                                             scoring=['f1', 'recall'], refit='recall', 
+                                                             n_jobs=10, cv=10, verbose=3)
+
+return_results_xgb_w_r.T
+
+# =============================
+# XGBoost with hyperparameter tuning with SMOTE
+# =============================
+model_name = 'xgboost_t_s_r'
+model_display_name = 'XGBoost (SMOTE)'
+
+xgb_model_smote_r = XGBClassifier(objective='binary:logistic', nthread=4, seed=15, use_label_encoder=False, eval_metric='logloss')
+xgb_pipeline_smote_r = create_pipeline(model_name, xgb_model_smote_r, use_SMOTE=True)
+
+xgb_smote_r_parameters = {model_name + '__max_depth': range (2, 10, 1),
+                          model_name + '__n_estimators': range(60, 220, 40),
+                          model_name + '__learning_rate': [0.1, 0.01, 0.05]}
+
+grid_search_obj_xgb_s_r, return_results_xgb_s_r = gridsearch_results_complete(model_name=model_name, 
+                                                                 model_display_name=model_display_name,
+                                                                 estimator=xgb_pipeline_smote_r, 
+                                                                 param_grid=xgb_smote_r_parameters, 
+                                                                 scoring=['f1', 'recall'], refit='recall', 
+                                                                 n_jobs=10, cv=10, verbose=True)
+
+return_results_xgb_s_r.T
+
+
+# =======================================================================================
+# Hyperparameter tuning Logistic Regression
+# =======================================================================================
+# =============================
+# Weighted Logistic Regression with hyperparameter tuning without SMOTE
+# =============================
+model_name = 'log_reg_w_s'
+model_display_name = 'Weighted Log Reg'
+
+lr_s_model = LogisticRegression(random_state=15)
+lr_s_pipeline = create_pipeline(model_name, lr_s_model, use_SMOTE=False)
+
+lr_s_parameters = {model_name + '__C': np.logspace(-3, 3, 20), 
+                   model_name + '__penalty': ['l2'],
+                   model_name + '__class_weight' : weights_lr_svm}
+
+grid_search_obj_lr, return_results_lr = gridsearch_results(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=lr_pipeline, 
+                                                             param_grid=lr_parameters, 
+                                                             scoring=['f1', 'recall'], refit='f1', 
+                                                             n_jobs=10, cv=10, verbose=True)
+
+# =============================
+# Logistic Regression with hyperparameter tuning with SMOTE
+# =============================
+model_name = 'log_reg_t_s'
+model_display_name = 'Log Reg (SMOTE)'
+
+lr_t_s_model = LogisticRegression(random_state=15)
+lr_t_s_pipeline = create_pipeline(model_name, lr_t_s_model, use_SMOTE=True)
+
+lr_t_s_parameters = {model_name + '__C': np.logspace(-3, 3, 20), 
+                 model_name + '__penalty': ['l2']}
+
+grid_search_obj_lr_t_s, return_results_lr_t_s = gridsearch_results(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=lr_t_s_pipeline, 
+                                                             param_grid=lr_t_s_parameters, 
+                                                             scoring=['f1', 'recall'], refit='f1', 
+                                                             n_jobs=10, cv=10, verbose=True)
 
 
 
