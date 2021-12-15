@@ -198,7 +198,13 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     except:
         PPV = 0
         print("While evaluating model " + model_display_name + ", encountered 'ZeroDivisionError' while calculating PPV, so setting PPV to zero")
-    NPV = TN / (TN+FN)
+    
+    try:
+        NPV = TN / (TN+FN)
+    except:
+        NPV = 0
+        print("While evaluating model " + model_display_name + ", encountered 'ZeroDivisionError' while calculating NPV, so setting NPV to zero")
+
     f1_manual = (2*TP) / ((2*TP) + FP + FN)
     
     # =============================
@@ -554,7 +560,13 @@ for row in lr_final_results.index:
         df_row['PPV (precision)'] = 0
     else:
         df_row['PPV (precision)'] = PPV
-    df_row['NPV'] = lr_models_dict[row]['NPV']
+    
+    NPV = lr_models_dict[row]['NPV']
+    if (np.isnan(PPV)):
+        df_row['NPV'] = 0
+    else:
+        df_row['NPV'] = NPV
+
     df_row['AUPRC'] = lr_models_dict[row]['AUPRC']
     df_row['f1'] = lr_models_dict[row]['F1']
 lr_final_results = lr_final_results.apply(pd.to_numeric)
@@ -1084,8 +1096,22 @@ def gridsearch_results_complete(model_name, model_display_name, estimator, param
         
     return_results['Specificity'] = results_gs['Specificity']
     return_results['AUROC'] = results_gs['AUROC']
-    return_results['PPV (precision)'] = results_gs['PPV (precision)']
-    return_results['NPV'] = results_gs['NPV']
+    
+    # return_results['PPV (precision)'] = results_gs['PPV (precision)']
+    # return_results['NPV'] = results_gs['NPV']
+    
+    PPV = results_gs['PPV (precision)']
+    if (np.isnan(PPV)):
+        return_results['PPV (precision)'] = 0
+    else:
+        return_results['PPV (precision)'] = PPV
+    
+    NPV = results_gs['NPV']
+    if (np.isnan(NPV)):
+        return_results['NPV'] = 0
+    else:
+       return_results['NPV'] = NPV
+    
     return_results['AUPRC'] = results_gs['AUPRC']
     
     return grid_search, return_results
@@ -1171,43 +1197,131 @@ return_results_xgb_s_r.T
 # =============================
 # Weighted Logistic Regression with hyperparameter tuning without SMOTE
 # =============================
-model_name = 'log_reg_w_s'
+model_name = 'log_reg_w_r'
 model_display_name = 'Weighted Log Reg'
 
-lr_s_model = LogisticRegression(random_state=15)
-lr_s_pipeline = create_pipeline(model_name, lr_s_model, use_SMOTE=False)
+lr_r_model = LogisticRegression(random_state=15)
+lr_r_pipeline = create_pipeline(model_name, lr_r_model, use_SMOTE=False)
 
-lr_s_parameters = {model_name + '__C': np.logspace(-3, 3, 20), 
+lr_r_parameters = {model_name + '__C': np.logspace(-3, 3, 20), 
                    model_name + '__penalty': ['l2'],
                    model_name + '__class_weight' : weights_lr_svm}
 
-grid_search_obj_lr, return_results_lr = gridsearch_results(model_name=model_name, 
+grid_search_obj_lr_r, return_results_lr_r = gridsearch_results_complete(model_name=model_name, 
                                                              model_display_name=model_display_name, 
-                                                             estimator=lr_pipeline, 
-                                                             param_grid=lr_parameters, 
-                                                             scoring=['f1', 'recall'], refit='f1', 
+                                                             estimator=lr_r_pipeline, 
+                                                             param_grid=lr_r_parameters, 
+                                                             scoring=['f1', 'recall'], refit='recall', 
                                                              n_jobs=10, cv=10, verbose=True)
+
+return_results_lr_r.T
 
 # =============================
 # Logistic Regression with hyperparameter tuning with SMOTE
 # =============================
-model_name = 'log_reg_t_s'
+model_name = 'log_reg_t_s_r'
 model_display_name = 'Log Reg (SMOTE)'
 
-lr_t_s_model = LogisticRegression(random_state=15)
-lr_t_s_pipeline = create_pipeline(model_name, lr_t_s_model, use_SMOTE=True)
+lr_t_s_r_model = LogisticRegression(random_state=15)
+lr_t_s_r_pipeline = create_pipeline(model_name, lr_t_s_r_model, use_SMOTE=True)
 
-lr_t_s_parameters = {model_name + '__C': np.logspace(-3, 3, 20), 
-                 model_name + '__penalty': ['l2']}
+lr_t_s_r_parameters = {model_name + '__C': np.logspace(-3, 3, 20), 
+                       model_name + '__penalty': ['l2']}
 
-grid_search_obj_lr_t_s, return_results_lr_t_s = gridsearch_results(model_name=model_name, 
+grid_search_obj_lr_t_s_r, return_results_lr_t_s_r = gridsearch_results_complete(model_name=model_name, 
                                                              model_display_name=model_display_name, 
-                                                             estimator=lr_t_s_pipeline, 
-                                                             param_grid=lr_t_s_parameters, 
-                                                             scoring=['f1', 'recall'], refit='f1', 
+                                                             estimator=lr_t_s_r_pipeline, 
+                                                             param_grid=lr_t_s_r_parameters, 
+                                                             scoring=['f1', 'recall'], refit='recall', 
                                                              n_jobs=10, cv=10, verbose=True)
 
+return_results_lr_t_s_r.T
+
+
+# =======================================================================================
+# Hyperparameter tuning SVM
+# =======================================================================================
+# =============================
+# Weighted SVM with hyperparameter tuning without SMOTE
+# =============================
+model_name = 'svm_w_r'
+model_display_name = 'Weighted SVM'
+
+svm_r_model = SVC(random_state=15, probability=True)
+svm_r_pipeline = create_pipeline(model_name, svm_r_model, use_SMOTE=False)
+
+svm_r_parameters = {model_name + '__C': [0.1, 1, 10, 100, 1000],
+                    model_name + '__gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+                    model_name + '__kernel': ['rbf'],
+                    model_name + '__class_weight' : weights_lr_svm}
+
+grid_search_obj_svm_r, return_results_svm_r = gridsearch_results_complete(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=svm_r_pipeline, 
+                                                             param_grid=svm_r_parameters, 
+                                                             scoring=['f1', 'recall'], refit='recall', 
+                                                             n_jobs=10, cv=10, verbose=True)
+
+return_results_svm_r.T
+
+# =============================
+# SVM with hyperparameter tuning with SMOTE
+# =============================
+model_name = 'svm_t_s_r'
+model_display_name = 'SVM (SMOTE)'
+
+svm_t_s_r_model = SVC(random_state=15, probability=True)
+svm_t_s_r_pipeline = create_pipeline(model_name, svm_t_s_r_model, use_SMOTE=True)
+
+svm_t_s_r_parameters = {model_name + '__C': [0.1, 1, 10, 100, 1000],
+                        model_name + '__gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+                        model_name + '__kernel': ['rbf']}
+
+grid_search_obj_svm_t_s_r, return_results_svm_t_s_r = gridsearch_results_complete(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=svm_t_s_r_pipeline, 
+                                                             param_grid=svm_t_s_r_parameters, 
+                                                             scoring=['f1', 'recall'], refit='recall', 
+                                                             n_jobs=10, cv=10, verbose=2)
+
+return_results_svm_t_s_r.T
+
+# =======================================================================================
+# Combined Best Optimized for f1 with Optimized for recall
+# =======================================================================================
+
+combined_opt_f1 = combined_opt.copy()
+
+# return_results_xgb_w_r.T
+# return_results_xgb_s_r.T
+# return_results_lr_r.T
+# return_results_lr_t_s_r.T
+# return_results_svm_r.T
+# return_results_svm_t_s_r.T
+
+combined_opt_recall = pd.concat([return_results_xgb_w_r.T, 
+                                 return_results_xgb_s_r.T, 
+                                 return_results_lr_r.T, 
+                                 return_results_lr_t_s_r.T,
+                                 return_results_svm_r.T,
+                                 return_results_svm_t_s_r.T], 
+                                   axis=1, join='inner')
+
+
+combined_opt_recall.columns = ['Optimized Weighted XGB', 
+                                  'Optimized XGB SMOTE', 
+                                  'Optimized Weighted LR',
+                                  'Optimized LR SMOTE',
+                                  'Optimized Weighted SVM',
+                                  'Optimized SVM SMOTE']
+
+sns.heatmap(data=combined_opt_recall, annot=True, cmap="Blues", fmt=".3")
+plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
+plt.title('Combined Optimized Models (for recall)')
+save_filename = 'combined_metrics_recall'
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
 
 
 
-
+combined_opt_f1_recall = pd.concat([combined_opt_f1, combined_opt_recall], axis=1, join='inner')
