@@ -157,7 +157,8 @@ The non-optimized Weighted LR still has the highest recall by far, although it h
 
 ## Hyperparameter Tuning - Recall
 ### Models Optimized for Recall
-<p align="center"><img src="/output/models/combined_metrics_recall.png" width="900"/></p> 
+Repeated the same hyperparameter parameter tuning as above, but optized for recall instead of f1 score. As seen below, a couple of the weighted models reached a recall of 100%, catching all strokes. However, it looks like they may have predicted all individuals to have a stroke, as their accuracy was 5% and specificity was 0%. More precise hyperparameter tuning needs to be done. This can be explored in the future (see below)
+<p align="center"><img src="/output/models/combined_metrics_recall.png" width="900"/></p> <br>
 
 
 
