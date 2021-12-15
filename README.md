@@ -20,7 +20,7 @@ In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.k
   - Continued to compare to strategies of dealing with imbalanced target (weighting vs. SMOTE) for each model
 - Model Evaluation
   - I chose to primarily evaluate models based on recall (sensitivity) as it is important to identify all individuals at high risk of stroke
-  - In addition to recall, I looked at precision and f1 as they focus more on the positive cases (stroke) than negative cases, which is important both clinically, and analytically as the positive cases are also the minority class.
+  - In addition to recall, I looked at precision and f1 as they focus more on the positive cases (stroke) than negative cases, which is important both clinically and analytically as the positive cases are also the minority class.
 
 ## EDA
 Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/output/eda](/output/eda)
