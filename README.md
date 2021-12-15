@@ -146,8 +146,9 @@ First column is the orginal non-optimized Weighted Logistic Regression. Second c
 First column is the orginal non-optimized SVM with SMOTE. Unlike LR and XGB, Weighted SVM performed only marginally better than SVM SMOTE in recall. 
 
 <p align="center"><img src="/output/models/combined_metrics_svm.png" width="900"/></p> 
+<br>
 
-### Best Optimized Models
+### Best Models Optimized for f1 score
 <p align="center"><img src="/output/models/combined_metrics_best_f1.png" width="900"/></p> 
 
 ## Potential Next Steps
