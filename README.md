@@ -150,6 +150,7 @@ First column is the orginal non-optimized SVM with SMOTE. Unlike LR and XGB, Wei
 
 ### Best Models Optimized for f1 score
 <p align="center"><img src="/output/models/combined_metrics_best_f1.png" width="900"/></p> 
+<br>
 
 ### Models Optimized for Recall
 <p align="center"><img src="/output/models/combined_metrics_recall.png" width="900"/></p> 
