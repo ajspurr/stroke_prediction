@@ -924,11 +924,14 @@ return_results_lr_t_s.T
 # =============================
 # Combine all Log Reg results
 # =============================
-combined_lr = pd.concat([final_results.T['Logistic Regression'], return_results_lr.T, return_results_lr_t_s.T], axis=1, join='inner')
-combined_lr.columns = ['Non-optimized LR SMOTE', 'Optimized Weighted LR', 'Optimized LR SMOTE']
+old_weighted_lr = lr_final_results.T['LR (weighted)']
+old_weighted_lr.index = return_results_lr.T.index
+
+combined_lr = pd.concat([old_weighted_lr, final_results.T['Logistic Regression'], return_results_lr.T, return_results_lr_t_s.T], axis=1, join='inner')
+combined_lr.columns = ['Non-optimized Weighted LR', 'Non-optimized LR SMOTE', 'Optimized Weighted LR', 'Optimized LR SMOTE']
 sns.heatmap(data=combined_lr, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
-plt.title('LR Combined Metrics (optimized for f1 score)')
+plt.title('Log Reg Combined Metrics (optimized for f1 score)')
 #save_filename = 'combined_metrics_lr'
 #save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
