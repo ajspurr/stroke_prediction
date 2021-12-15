@@ -151,10 +151,15 @@ First column is the orginal non-optimized SVM with SMOTE. Unlike LR and XGB, Wei
 ### Best Models Optimized for f1 score
 <p align="center"><img src="/output/models/combined_metrics_best_f1.png" width="900"/></p> 
 
+### Best Models Optimized for f1 score plus Models Optimized for Recall
+<p align="center"><img src="/output/models/combined_metrics_f1_recall.png" width="900"/></p> 
+
+
+
 ## Potential Next Steps
 - Productionize chosen model
 - Improve models
-  - Expand hyperparameter tuning
+  - Improve hyperparameter tuning
     - Explore further on how to optimize models for unbalanced data
-    - Use recall as optimization metric rather than f1
+    - More precise parameter ranges
   - Explore feature engineering and feature importance
