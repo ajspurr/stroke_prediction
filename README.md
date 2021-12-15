@@ -99,22 +99,19 @@ As seen below, logistic regression, and SVM had the highest recall, followed by 
 I chose to optimize hyperparameters based on f1 score as this is a well-rounded measure of performance that incorporates recall and precision. The argument could be made to optimize solely on recall so as to minimize false negatives. This can be explored later. 
 
 ### XGBoost
-#### Weighted XGBoost (no SMOTE)
-Hyperparameter tuning values: 
+#### Hyperparameter tuning values: 
 - max_depth: range (2, 10, 1)
 - n_estimators: range(60, 220, 40)
 - learning_rate: [0.1, 0.01, 0.05]
 - scale_pos_weight: weights
   - Like the weighted logistic regression, I based the 'weights' on the inverse class distribution in the training data. In this case, there are 194 individuals with stroke and 3894 without a stroke. So the inverse class distribution is 3894/194 = 20. Then for hyperparameter tuning, I added 4 more values to try: the inverse class distribution +/- 25% and +/- 50%. 
-
-#### XGBoost non-weighted, with SMOTE
-Hyperparameter tuning values same as Weighted XGBoost without SMOTE but without the weight metric 
-
-#### Weighted XGBoost with SMOTE
-Hyperparameter tuning values same as Weighted XGBoost without SMOTE 
+#### Optimized Models
+- Weighted XGBoost (no SMOTE)
+- XGBoost non-weighted with SMOTE
+- Weighted XGBoost with SMOTE
 
 #### Combined XGBoost Results
-Weighted XGBoost performed better than XGBoost with SMOTE in terms of both recall and f1 score. I wanted to test whether using both weights and SMOTE to deal an imbalanced dataset would improve results, but it did not perform better than just using weights. 
+First column is the orginal non-optimized XGBoost with SMOTE. Weighted XGBoost performed better than XGBoost with SMOTE in terms of both recall and f1 score. I wanted to test whether using both weights and SMOTE to deal an imbalanced dataset would improve results, but it did not perform better than just using weights. 
 
 <p align="center"><img src="/output/models/combined_metrics_xgb.png" width="900"/></p> 
 
