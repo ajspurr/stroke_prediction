@@ -111,7 +111,7 @@ As seen above, logistic regression and SVM had the highest recall, followed by g
 I initially chose to optimize hyperparameters based on f1 score as this is a well-rounded measure of performance that incorporates recall and precision. The argument could be made to optimize solely on recall so as to minimize false negatives. This is explored at the end. 
 
 ### XGBoost
-#### Hyperparameter tuning values
+**Hyperparameter tuning values** ([1](https://www.mikulskibartosz.name/xgboost-hyperparameter-tuning-in-python-using-grid-search/), [2](https://towardsdatascience.com/binary-classification-xgboost-hyperparameter-tuning-scenarios-by-non-exhaustive-grid-search-and-c261f4ce098d), [3](https://machinelearningmastery.com/xgboost-for-imbalanced-classification/))
 - max_depth: range (2, 10, 1)
 - n_estimators: range(60, 220, 40)
 - learning_rate: [0.1, 0.01, 0.05]
@@ -129,7 +129,7 @@ The first column is the orginal non-optimized XGBoost with SMOTE. Weighted XGBoo
 <p align="center"><img src="/output/models/combined_metrics_xgb.png" width="900"/></p> 
 
 ### Logistic Regression
-#### Hyperparameter tuning values
+**Hyperparameter tuning values** ([1](https://machinelearningknowledge.ai/hyperparameter-tuning-with-sklearn-gridsearchcv-and-randomizedsearchcv/), [2](https://machinelearningmastery.com/xgboost-for-imbalanced-classification/))
 - C: np.logspace(-3, 3, 20)
 - penalty: ['l2']
 - class_weight: weights (weights derived similarly to XGBoost above)
@@ -144,7 +144,7 @@ The first column is the orginal non-optimized Weighted Logistic Regression. The 
 <p align="center"><img src="/output/models/combined_metrics_lr.png" width="900"/></p> 
 
 ### SVM
-#### Hyperparameter tuning values
+**Hyperparameter tuning values** ([1](https://machinelearningknowledge.ai/hyperparameter-tuning-with-sklearn-gridsearchcv-and-randomizedsearchcv/))
 - C: [0.1, 1, 10, 100, 1000]
 - gamma: [1, 0.1, 0.01, 0.001, 0.0001]
 - kernel: ['rbf']
