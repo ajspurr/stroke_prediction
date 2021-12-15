@@ -127,7 +127,7 @@ First column is the orginal non-optimized XGBoost with SMOTE. Weighted XGBoost p
 - Logistic Regression non-weighted with SMOTE
 
 #### Combined Logistic Regression Results
-First column is the orginal non-optimized Logistic Regression with SMOTE. Similar to comparison of non-optimized logistic regression earlier, weighted logistic regression performed better than logistic regression with SMOTE in terms of both recall and f1 score. I did not combined weights and SMOTE this time. 
+First column is the orginal non-optimized Weighted Logistic Regression. Second column is the orginal Logistic Regression with SMOTE. Weighted Logistic Regression had a better recall than Logistic Regression with SMOTE regardless of whether the model was optimized or not. This makes sense as the weighted models penalize false negatives much more than the non-weighted models. 
 
 <p align="center"><img src="/output/models/combined_metrics_lr.png" width="900"/></p> 
 
