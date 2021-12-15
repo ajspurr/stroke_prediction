@@ -860,6 +860,7 @@ plt.show()
 # Hyperparameter tuning Logistic Regression
 # =======================================================================================
 # https://machinelearningknowledge.ai/hyperparameter-tuning-with-sklearn-gridsearchcv-and-randomizedsearchcv/
+# https://machinelearningmastery.com/xgboost-for-imbalanced-classification/
 # =============================
 # Weighted Logistic Regression with hyperparameter tuning without SMOTE
 # =============================
@@ -869,7 +870,7 @@ model_display_name = 'Weighted Log Reg'
 lr_model = LogisticRegression(random_state=15)
 lr_pipeline = create_pipeline(model_name, lr_model, use_SMOTE=False)
 
-# Calculate baseline weight parameters as in Weighted Logistic Regression much higher in code
+# Calculate baseline weight parameters the same way as with Weighted Logistic Regression much higher in code
 num_pos_target = sum(y_train == 1) # minority class
 num_neg_target = sum(y_train == 0) # majority class
 ratio_pos_to_neg = num_pos_target / num_neg_target
@@ -897,9 +898,6 @@ grid_search_obj_lr, return_results_lr = gridsearch_results(model_name=model_name
                                                              scoring=['f1', 'recall'], refit='f1', 
                                                              n_jobs=10, cv=10, verbose=True)
 
-return_results_lr.T
-
-
 # =============================
 # Logistic Regression with hyperparameter tuning with SMOTE
 # =============================
@@ -919,8 +917,6 @@ grid_search_obj_lr_t_s, return_results_lr_t_s = gridsearch_results(model_name=mo
                                                              scoring=['f1', 'recall'], refit='f1', 
                                                              n_jobs=10, cv=10, verbose=True)
 
-return_results_lr_t_s.T
-
 # =============================
 # Combine all Log Reg results
 # =============================
@@ -932,43 +928,145 @@ combined_lr.columns = ['Non-optimized Weighted LR', 'Non-optimized LR SMOTE', 'O
 sns.heatmap(data=combined_lr, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
 plt.title('Log Reg Combined Metrics (optimized for f1 score)')
-#save_filename = 'combined_metrics_lr'
-#save_image(output_dir, save_filename, bbox_inches='tight')
+save_filename = 'combined_metrics_lr'
+save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
-
 
 
 # =======================================================================================
 # Hyperparameter tuning SVM
 # =======================================================================================
+# https://machinelearningknowledge.ai/hyperparameter-tuning-with-sklearn-gridsearchcv-and-randomizedsearchcv/
+# =============================
+# Weighted SVM with hyperparameter tuning without SMOTE
+# =============================
+model_name = 'svm_w'
+model_display_name = 'Weighted SVM'
 
-#grid = GridSearchCV(svm, param_grid, refit = True, verbose =0,cv=10)
+svm_model = SVC(random_state=15, probability=True)
+svm_pipeline = create_pipeline(model_name, svm_model, use_SMOTE=False)
 
-# SVM
-estimator = SVC(random_state=15, probability=True)
-estimator_pipe = create_pipeline('SVM', estimator, use_SMOTE=True)
-parameters = {'SVM__C': [0.1, 1, 10, 100, 1000], 
-              'SVM__gamma': [1, 0.1, 0.01, 0.001, 0.0001],
-              'SVM__kernel': ['rbf']} 
-grid_search = GridSearchCV(estimator=estimator_pipe, param_grid=parameters, refit = True, scoring = 'f1', n_jobs = 10, cv = 10, verbose=True)
+# Calculate baseline weight parameters the same way as with Weighted Logistic Regression much higher in code
+num_pos_target = sum(y_train == 1) # minority class
+num_neg_target = sum(y_train == 0) # majority class
+ratio_pos_to_neg = num_pos_target / num_neg_target
 
-grid_search.fit(X_train, y_train)
+# Set up weights
+weights = [{0:ratio_pos_to_neg, 1:(1/ratio_pos_to_neg)}]
+new_ratio = ratio_pos_to_neg*0.5
+weights.append({0:new_ratio, 1:(1/new_ratio)})
+new_ratio = ratio_pos_to_neg*0.75
+weights.append({0:new_ratio, 1:(1/new_ratio)})
+new_ratio = ratio_pos_to_neg*1.25
+weights.append({0:new_ratio, 1:(1/new_ratio)})
+new_ratio = ratio_pos_to_neg*1.5
+weights.append({0:new_ratio, 1:(1/new_ratio)})
 
-print(grid_search.best_params_)
-# {'SVM__C': 0.1, 'SVM__gamma': 0.1, 'SVM__kernel': 'rbf'}
+svm_parameters = {model_name + '__C': [0.1, 1, 10, 100, 1000],
+                  model_name + '__gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+                  model_name + '__kernel': ['rbf'],
+                  model_name + '__class_weight' : weights}
 
-new_SVM_pipeline = grid_search.best_estimator_
+grid_search_obj_svm, return_results_svm = gridsearch_results(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=svm_pipeline, 
+                                                             param_grid=svm_parameters, 
+                                                             scoring=['f1', 'recall'], refit='f1', 
+                                                             n_jobs=10, cv=10, verbose=True)
 
-new_SVM_pipeline.fit(X_train, y_train)
-y_pred_new_SVM = new_SVM_pipeline.predict(X_valid)
-results, conmat = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_new_SVM, new_SVM_pipeline, 'SVM (new)', create_graphs=False)
 
-new_SVM_cv_f1 = cross_val_score(new_SVM_pipeline, X, y, cv=10, scoring='f1')
-new_SVM_cv_recall = cross_val_score(new_SVM_pipeline, X, y, cv=10, scoring='recall')
-print("Mean f1 CV score:" + str(np.round(new_SVM_cv_f1.mean(), 4)))
-print("Mean recall CV score:" + str(np.round(new_SVM_cv_recall.mean(), 4)))
+# =============================
+# SVM with hyperparameter tuning with SMOTE
+# =============================
+model_name = 'svm_t_s'
+model_display_name = 'SVM (SMOTE)'
 
-# Recall (cross val) highly improved from 0.47 to ~0.79, other metrics similar to before
+svm_t_s_model = SVC(random_state=15, probability=True)
+svm_t_s_pipeline = create_pipeline(model_name, svm_t_s_model, use_SMOTE=True)
+
+svm_t_s_parameters = {model_name + '__C': [0.1, 1, 10, 100, 1000],
+                  model_name + '__gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+                  model_name + '__kernel': ['rbf']}
+
+grid_search_obj_svm_t_s, return_results_svm_t_s = gridsearch_results(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=svm_t_s_pipeline, 
+                                                             param_grid=svm_t_s_parameters, 
+                                                             scoring=['f1', 'recall'], refit='f1', 
+                                                             n_jobs=10, cv=10, verbose=2)
+
+
+# =============================
+# Combine all SVM results
+# =============================
+combined_svm = pd.concat([final_results.T['SVM'], return_results_svm.T, return_results_svm_t_s.T], axis=1, join='inner')
+combined_svm.columns = ['Non-optimized SVM SMOTE', 'Optimized Weighted SVM', 'Optimized SVM SMOTE']
+sns.heatmap(data=combined_svm, annot=True, cmap="Blues", fmt=".3")
+plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
+plt.title('SVM Combined Metrics (optimized for f1 score)')
+save_filename = 'combined_metrics_svm'
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
+
+
+
+
+
+
+
+
+
+# ====================================================================================================================
+# Hyperparameter tuning for Logistic Regression, SVM, XGBoost, optimized for recall (as opposed to f1)
+# ====================================================================================================================
+
+# =============================
+# BETTER Function organizing GridSearchCV results
+# =============================
+# Function assumes scoring=['f1', 'recall'] and that refit='f1'
+# Parameter 'model_name' will be used for coding and saving images
+# Parameter 'model_display_name' will be used for plot labels
+# The recall and precision that are returned are the mean cross-validated values
+def gridsearch_results(model_name, model_display_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True):
+    # Create GridSearch object and fit data
+    grid_search = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, refit=refit, n_jobs=n_jobs, cv=cv, verbose=verbose)
+    grid_search.fit(X_train, y_train)
+    
+    # Access scores of best estimator
+    results = grid_search.cv_results_
+    
+    # Gets the index of the best f1 score (to be used later as well)
+    best_estimator_f1_index = np.nonzero(results['rank_test_f1'] == 1)[0][0]
+    
+    # Uses the index to select the best f1 score, which was used to select the best estimator
+    best_estimator_f1 = results['mean_test_f1'][best_estimator_f1_index]
+    
+    # To get the recall score of the best estimator, use the same index as the best f1, since that corresponds to the same estimator
+    best_estimator_recall = results['mean_test_recall'][best_estimator_f1_index]
+    
+    # Using optimal model from GridSearch results, fit and run model again so that I can run my results functions
+    pipeline_gs = grid_search.best_estimator_
+    pipeline_gs.fit(X_train, y_train)
+    y_pred_gs = pipeline_gs.predict(X_valid)
+    
+    # Get results using my function
+    results_gs, conmat_gs = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_gs, pipeline_gs, model_name, model_display_name, create_graphs=False)
+    
+    # Combine most important results into one dataframe
+    return_metrics = ['Accuracy', 'Sensitivity (recall, CV)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1 (CV)']
+    return_results = pd.DataFrame(columns=return_metrics, index=[model_display_name])
+    return_results['Accuracy'] = results_gs['Accuracy']    
+    return_results['Sensitivity (recall, CV)'] = best_estimator_recall
+    return_results['Specificity'] = results_gs['Specificity']
+    return_results['AUROC'] = results_gs['AUROC']
+    return_results['PPV (precision)'] = results_gs['PPV (precision)']
+    return_results['NPV'] = results_gs['NPV']
+    return_results['AUPRC'] = results_gs['AUPRC']
+    return_results['f1 (CV)'] = best_estimator_f1
+    
+    return grid_search, return_results
+
+
 
 
 
