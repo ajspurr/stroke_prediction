@@ -3,7 +3,13 @@ About 800,000 people in the United States have a stroke each year. It is a leadi
 
 In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset). I'll go through the major steps in Machine Learning to build a model to predict whether or not an individual is likely to have a stroke. This doesn't necessarily calculate a lifetime risk of stroke or chances of an acute stroke. But it can identify individuals who should take the preventive actions mentioned above.  
 
-Exploratory data analysis, data preprocessing, model training, parameter tuning, stroke prediction, and model evaluation using Kaggle stroke dataset: https://www.kaggle.com/fedesoriano/stroke-prediction-dataset
+#### Machine Learning Steps
+- Exploratory Data Analysis
+- Data Preparation
+- Model Training
+- Parameter Tuning
+- Stroke Prediction
+- Model Evaluation 
 
 ## EDA
 Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/output/eda](/output/eda)
