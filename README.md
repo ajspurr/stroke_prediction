@@ -22,6 +22,13 @@ In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.k
   - I chose to primarily evaluate models based on recall (sensitivity) as it is important to identify all individuals at high risk of stroke
   - In addition to recall, I looked at precision and f1 as they focus more on the positive cases (stroke) than negative cases, which is important both clinically and analytically as the positive cases are also the minority class.
 
+## Programming Language and Resource Details
+**Python Version:** 3.8.8
+
+**Packages:** pandas, numpy, sklearn, imblearn, matplotlib, seaborn
+
+**Resources:** Reference links embedded in appropriate sections
+
 ## EDA
 Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/output/eda](/output/eda)
 
