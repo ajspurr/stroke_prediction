@@ -11,6 +11,11 @@ In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.k
 - Stroke Prediction
 - Model Evaluation 
 
+## Analysis Highlights
+- Highly unbalanced target class
+- Dealing with unbalanced binary classification
+- 
+
 ## EDA
 Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/output/eda](/output/eda)
 
