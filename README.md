@@ -4,7 +4,7 @@ Exploratory data analysis, data preprocessing, model training, parameter tuning,
 ## EDA
 Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/output/eda](/output/eda)
 
-1. Basic data exploration. Dataset has 5110 rows and 11 columns, a mix of numerical and categorical data types, and minimal missing data. 
+1. Dataset has 5110 rows and 11 columns, a mix of numerical and categorical data types, and minimal missing data. 
 
 <p align="center"><img src="/output/eda/feature_summary.png" width="600"/></p>
 <br>
