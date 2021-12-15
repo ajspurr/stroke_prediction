@@ -527,7 +527,7 @@ save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 # =============================
-# Combine top 3 model performance metrics into one dataframe then heatmap
+# Combine above 3 model performance metrics into one dataframe then heatmap
 # =============================
 # Create dictionary of model performance metrics
 lr_model_names = ['LR', 'LR (weighted)', 'LR (SMOTE)']
