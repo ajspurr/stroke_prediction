@@ -95,10 +95,10 @@ Explored more models post-SMOTE. Used cross-validation to calculate recall and f
 
 <p align="center"><img src="/output/models/metrics_multiple_models_smote.png" width="900"/></p> 
 
-As seen below, logistic regression, and SVM had the highest recall, followed by gradient boosting, XGBoost, and KNN. Decision tree and random forest performed poorly both with recall and f1 score. Will perform hyperparameter tuning on the logistic regression, SVM, and XGBoost models:
+As seen above, logistic regression and SVM had the highest recall, followed by gradient boosting, XGBoost, and KNN. Decision tree and random forest performed poorly both with recall and f1 score. Will move forward by performing hyperparameter tuning on the logistic regression, SVM, and XGBoost models:
 
 ## Hyperparameter Tuning - f1 score
-I chose to optimize hyperparameters based on f1 score as this is a well-rounded measure of performance that incorporates recall and precision. The argument could be made to optimize solely on recall so as to minimize false negatives. This can be explored later. 
+I initially chose to optimize hyperparameters based on f1 score as this is a well-rounded measure of performance that incorporates recall and precision. The argument could be made to optimize solely on recall so as to minimize false negatives. This is explored at the end. 
 
 ### XGBoost
 #### Hyperparameter tuning values
@@ -108,13 +108,13 @@ I chose to optimize hyperparameters based on f1 score as this is a well-rounded 
 - scale_pos_weight: weights
   - Like the weighted logistic regression, I based the 'weights' on the inverse class distribution in the training data. In this case, there are 194 individuals with stroke and 3894 without a stroke. So the inverse class distribution is 3894/194 = 20. Then for hyperparameter tuning, I added 4 more values to try: the inverse class distribution +/- 25% and +/- 50%. 
 
-#### Optimized Models
+#### New Optimized Models
 - Weighted XGBoost (no SMOTE)
 - XGBoost non-weighted with SMOTE
 - Weighted XGBoost with SMOTE
 
 #### Combined XGBoost Results
-First column is the orginal non-optimized XGBoost with SMOTE. Weighted XGBoost performed better than XGBoost with SMOTE in terms of both recall and f1 score. I wanted to test whether using both weights and SMOTE to deal an imbalanced dataset would improve results, but it did not perform better than just using weights. 
+The first column is the orginal non-optimized XGBoost with SMOTE. Weighted XGBoost performed better than XGBoost with SMOTE in terms of both recall and f1 score. I wanted to test whether using both weights and SMOTE to deal an imbalanced dataset would improve results, but it did not perform better than just using weights. 
 
 <p align="center"><img src="/output/models/combined_metrics_xgb.png" width="900"/></p> 
 
@@ -124,12 +124,12 @@ First column is the orginal non-optimized XGBoost with SMOTE. Weighted XGBoost p
 - penalty: ['l2']
 - class_weight: weights (weights derived similarly to XGBoost above)
 
-#### Optimized Models
+#### New Optimized Models
 - Weighted Logistic Regression (no SMOTE)
 - Logistic Regression non-weighted with SMOTE
 
 #### Combined Logistic Regression Results
-First column is the orginal non-optimized Weighted Logistic Regression. Second column is the orginal Logistic Regression with SMOTE. Weighted Logistic Regression had a better recall than Logistic Regression with SMOTE regardless of whether the model was optimized or not. This makes sense as the weighted models penalize false negatives much more than the non-weighted models. Optimization did not seem to improve results (recall and f1) either with Weighted Logistic Regression or Logistic Regression with SMOTE.
+The first column is the orginal non-optimized Weighted Logistic Regression. The second column is the orginal Logistic Regression with SMOTE. Weighted Logistic Regression had a better recall than Logistic Regression with SMOTE regardless of whether the model was optimized or not. This makes sense as the weighted models penalize false negatives much more than the non-weighted models. Optimization did not seem to improve recall or f1 either with Weighted Logistic Regression or Logistic Regression with SMOTE.
 
 <p align="center"><img src="/output/models/combined_metrics_lr.png" width="900"/></p> 
 
@@ -140,12 +140,12 @@ First column is the orginal non-optimized Weighted Logistic Regression. Second c
 - kernel: ['rbf']
 - class_weight: weights (weights derived similarly to XGBoost above)
 
-#### Optimized Models
+#### New Optimized Models
 - Weighted SVM (no SMOTE)
 - SVM non-weighted with SMOTE
 
 #### Combined SVM Results
-First column is the orginal non-optimized SVM with SMOTE. Unlike LR and XGB, Weighted SVM performed only marginally better than SVM SMOTE in recall. 
+The first column is the orginal non-optimized SVM with SMOTE. Unlike LR and XGB, Weighted SVM' recall was only marginally better than SVM SMOTE. 
 
 <p align="center"><img src="/output/models/combined_metrics_svm.png" width="900"/></p> 
 <br>
@@ -161,8 +161,9 @@ First column is the orginal non-optimized SVM with SMOTE. Unlike LR and XGB, Wei
 
 ## Potential Next Steps
 - Productionize chosen model
-- Improve models
-  - Improve hyperparameter tuning
+- Improve predictions
+  - Try to optimize different models (e.g. KNN, Random Forest)
+  - Improve hyperparameter tuning of current models
     - Explore further on how to optimize models for unbalanced data
     - More precise parameter ranges
   - Explore feature engineering and feature importance
