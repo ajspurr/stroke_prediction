@@ -995,7 +995,6 @@ grid_search_obj_svm_t_s, return_results_svm_t_s = gridsearch_results(model_name=
                                                              scoring=['f1', 'recall'], refit='f1', 
                                                              n_jobs=10, cv=10, verbose=2)
 
-
 # =============================
 # Combine all SVM results
 # =============================
@@ -1010,6 +1009,21 @@ plt.show()
 
 
 
+# ==========================================================
+# Combine best models
+# ==========================================================
+old_weighted_lr = lr_final_results.T['LR (weighted)']
+old_weighted_lr.index = return_results_lr.T.index
+                         
+combined_opt = pd.concat([return_results_xgb.T, old_weighted_lr, final_results.T['Logistic Regression'], return_results_svm_t_s.T], axis=1, join='inner')
+combined_opt.columns = ['Optimized Weighted XGB', 'Non-optimized Weighted LR', 'Non-optimized LR SMOTE', 'Optimized SVM SMOTE']
+sns.heatmap(data=combined_opt, annot=True, cmap="Blues", fmt=".3")
+plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
+plt.title('Best models (optimized for f1 score)')
+save_filename = 'combined_metrics_best_f1'
+save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
+
 
 
 
@@ -1023,7 +1037,7 @@ plt.show()
 # =============================
 # BETTER Function organizing GridSearchCV results
 # =============================
-# Function assumes scoring=['f1', 'recall'] and that refit='f1'
+# Function assumes scoring=['f1', 'recall'] and that refit is either 'f1' or 'recall'
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
 # The recall and precision that are returned are the mean cross-validated values
