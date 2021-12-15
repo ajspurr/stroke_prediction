@@ -131,6 +131,22 @@ First column is the orginal non-optimized Weighted Logistic Regression. Second c
 
 <p align="center"><img src="/output/models/combined_metrics_lr.png" width="900"/></p> 
 
+### SVM
+#### Hyperparameter tuning values
+- C: [0.1, 1, 10, 100, 1000]
+- gamma: [1, 0.1, 0.01, 0.001, 0.0001]
+- kernel: ['rbf']
+- class_weight: weights (weights derived similarly to XGBoost above)
+
+#### Optimized Models
+- Weighted SVM (no SMOTE)
+- SVM non-weighted with SMOTE
+
+#### Combined SVM Results
+First column is the orginal non-optimized SVM with SMOTE.
+
+<p align="center"><img src="/output/models/combined_metrics_svm.png" width="900"/></p> 
+
 ## Potential Next Steps
 - Productionize chosen model
 - Improve models
