@@ -847,10 +847,10 @@ grid_search_obj_xgb_w_s_, return_results_xgb_w_s_ = gridsearch_results(model_nam
 # Combine all XGBoost results
 # =============================
 combined_xgb = pd.concat([final_results.T['XGBoost'], return_results_xgb.T, return_results_xgb_s.T, return_results_xgb_w_s_.T], axis=1, join='inner')
-#final_results = final_results.apply(pd.to_numeric)
+combined_xgb.columns = ['Non-optimized XGB SMOTE', 'Optimized Weighted XGB', 'Optimized XGB SMOTE', 'Optimized Weight XGB SMOTE']
 sns.heatmap(data=combined_xgb, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
-plt.title('XGBoost Combined Metrics')
+plt.title('XGBoost Combined Metrics (optimized for f1 score)')
 save_filename = 'combined_metrics_xgb'
 save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
@@ -886,10 +886,6 @@ new_ratio = ratio_pos_to_neg*1.5
 weights.append({0:new_ratio, 1:(1/new_ratio)})
 
 
-# Fit weighted logistic regression model
-log_reg_w = LogisticRegression(class_weight=weights, random_state=15)
-fit_w = log_reg_w.fit(X_train_processed, y_train)
-
 lr_parameters = {model_name + '__C': np.logspace(-3, 3, 20), 
                  model_name + '__penalty': ['l2'],
                  model_name + '__class_weight' : weights}
@@ -903,7 +899,40 @@ grid_search_obj_lr, return_results_lr = gridsearch_results(model_name=model_name
 
 return_results_lr.T
 
-# LEFT OFF HERE
+
+# =============================
+# Logistic Regression with hyperparameter tuning with SMOTE
+# =============================
+model_name = 'log_reg_t_s'
+model_display_name = 'Log Reg (SMOTE)'
+
+lr_t_s_model = LogisticRegression(random_state=15)
+lr_t_s_pipeline = create_pipeline(model_name, lr_t_s_model, use_SMOTE=True)
+
+lr_t_s_parameters = {model_name + '__C': np.logspace(-3, 3, 20), 
+                 model_name + '__penalty': ['l2']}
+
+grid_search_obj_lr_t_s, return_results_lr_t_s = gridsearch_results(model_name=model_name, 
+                                                             model_display_name=model_display_name, 
+                                                             estimator=lr_t_s_pipeline, 
+                                                             param_grid=lr_t_s_parameters, 
+                                                             scoring=['f1', 'recall'], refit='f1', 
+                                                             n_jobs=10, cv=10, verbose=True)
+
+return_results_lr_t_s.T
+
+# =============================
+# Combine all Log Reg results
+# =============================
+combined_lr = pd.concat([final_results.T['Logistic Regression'], return_results_lr.T, return_results_lr_t_s.T], axis=1, join='inner')
+combined_lr.columns = ['Non-optimized LR SMOTE', 'Optimized Weighted LR', 'Optimized LR SMOTE']
+sns.heatmap(data=combined_lr, annot=True, cmap="Blues", fmt=".3")
+plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
+plt.title('LR Combined Metrics (optimized for f1 score)')
+#save_filename = 'combined_metrics_lr'
+#save_image(output_dir, save_filename, bbox_inches='tight')
+plt.show()
+
 
 
 # =======================================================================================
