@@ -99,12 +99,13 @@ As seen below, logistic regression, and SVM had the highest recall, followed by 
 I chose to optimize hyperparameters based on f1 score as this is a well-rounded measure of performance that incorporates recall and precision. The argument could be made to optimize solely on recall so as to minimize false negatives. This can be explored later. 
 
 ### XGBoost
-#### Hyperparameter tuning values: 
+#### Hyperparameter tuning values
 - max_depth: range (2, 10, 1)
 - n_estimators: range(60, 220, 40)
 - learning_rate: [0.1, 0.01, 0.05]
 - scale_pos_weight: weights
   - Like the weighted logistic regression, I based the 'weights' on the inverse class distribution in the training data. In this case, there are 194 individuals with stroke and 3894 without a stroke. So the inverse class distribution is 3894/194 = 20. Then for hyperparameter tuning, I added 4 more values to try: the inverse class distribution +/- 25% and +/- 50%. 
+
 #### Optimized Models
 - Weighted XGBoost (no SMOTE)
 - XGBoost non-weighted with SMOTE
@@ -114,6 +115,21 @@ I chose to optimize hyperparameters based on f1 score as this is a well-rounded 
 First column is the orginal non-optimized XGBoost with SMOTE. Weighted XGBoost performed better than XGBoost with SMOTE in terms of both recall and f1 score. I wanted to test whether using both weights and SMOTE to deal an imbalanced dataset would improve results, but it did not perform better than just using weights. 
 
 <p align="center"><img src="/output/models/combined_metrics_xgb.png" width="900"/></p> 
+
+### Logistic Regression
+#### Hyperparameter tuning values
+- C: np.logspace(-3, 3, 20)
+- penalty: ['l2']
+- class_weight: weights (weights derived similarly to XGBoost above)
+
+#### Optimized Models
+- Weighted Logistic Regression (no SMOTE)
+- Logistic Regression non-weighted with SMOTE
+
+#### Combined Logistic Regression Results
+First column is the orginal non-optimized Logistic Regression with SMOTE. Similar to comparison of non-optimized logistic regression earlier, weighted logistic regression performed better than logistic regression with SMOTE in terms of both recall and f1 score. I did not combined weights and SMOTE this time. 
+
+<p align="center"><img src="/output/models/combined_metrics_lr.png" width="900"/></p> 
 
 ## Potential Next Steps
 - Productionize chosen model
