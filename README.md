@@ -7,20 +7,26 @@ In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.k
 - Exploratory Data Analysis: 
   - Dataset of 5110 individuals with features such as gender, age, BMI, and presence/absense of heart disease and hypertension
   - Highly unbalanced target: only 5% had a stroke
-- Data Preparation
-  - Imputation, scaling, categorical variable encoding
 - Dealing with unbalanced binary classification
-  - Started with Logistic Regression model
-  - Compared implementing Weighted Logistic Regression vs. Logistic Regression w/ SMOTE (Sythetic Minority Oversampling TEchnique)
+  - Compared Weighted Logistic Regression vs. Logistic Regression w/ SMOTE (Sythetic Minority Oversampling TEchnique)
 - Choosing a Model
   - Compared Logistic Regression, Decision Tree, Random Forest, SVM, Gradient Boosting, XGBoost, KNN (all w/ SMOTE)
 - Hyperparameter Tuning
   - Chose top three performers: Logistic Regression, SVM, and XGBoost
   - Used GridSearchCV to perform hyperparameter tuning optimized for f1 score, then for recall
-  - Continued to compare to strategies of dealing with imbalanced target (weighting vs. SMOTE) for each model
-- Model Evaluation
-  - I chose to primarily evaluate models based on recall (sensitivity) as it is important to identify all individuals at high risk of stroke
-  - In addition to recall, I looked at precision and f1 as they focus more on the positive cases (stroke) than negative cases, which is important both clinically and analytically as the positive cases are also the minority class.
+- Evaluating Models
+  - This was difficult with this dataset. I would like to choose a model with the highest recall so as to not miss any strokes. However, high recall comes at the cost of very low precision and therefore many false positives. For the sake of argument, let's say we are identifying individuals at higher risk of stroke so that they can focus on healthy living, as opposed to identifying them for some invasive testing. In this case, the cost of false positives is low so we can go back to focusing on recall as the primary metric. 
+  - Given the above assumptions, the two best models were:
+    - **Non-optimized Weighted Logistic Regression**
+      - Recall of 98.2% 
+        - Out of 4,088 individuals in the test set, missed 1 stroke out of 55
+      - Precision of 7% 
+        - 714 false positives in the same test set
+    - **Optimized Weighted XGBoost**
+      - Recall of 91.7%
+        - Out of 4,088 individuals in the test set, missed 4.5 strokes out of 55 (the fraction is because this is an average of the cross-validated recalls)
+      - Precision of 11.1%
+        - 404 false positives in the same test set
 
 ## Programming Language and Resource Details
 **Python Version:** 3.8.8
