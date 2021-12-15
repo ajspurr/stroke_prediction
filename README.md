@@ -22,6 +22,8 @@ Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/
 <br>
 5. Calculated correlation between continuous variables, between categorical variables (Cramer's V), and between continuous and categorical (Correlation Ratio). Variable pairs with correlation greater than 0.5 plotted below heatmaps. No correlations greater than 0.7. 
 
+(Credit to Shaked Zychlinski for explaining categorical correlation in [his article](https://towardsdatascience.com/the-search-for-categorical-correlation-a1cf7f1888c9))
+
 <br><p align="center"><img src="/output/eda/combined_corr.png" width="900"/></p> 
 
 <p align="center"><img src="/output/eda/combined_corr_details.png" width="900"/></p> 
