@@ -1,21 +1,21 @@
 # Stroke Prediction
 About 800,000 people in the United States have a stroke each year, making it a leading cause of serious long-term disability ([CDC](https://www.cdc.gov/stroke/facts.htm)). Fortunately, there are actions you can take to prevent or lower your chances of having a stroke such as eating healthy, maintaining a healthy weight, excercising, and abstaining from smoking. While everyone should follow these healthy habits, it can be helpful to identify individuals at high risk of stroke so they can pay especially close attention to their daily habits and make sure their chronic conditions (e.g. diabetes, hypertension) are well-controlled.
 
-In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset). I'll go through the major steps in Machine Learning to build and evaluate models to predict whether or not an individual is likely to have a stroke. This doesn't necessarily calculate a lifetime risk of stroke or chances of an acute stroke, but it can identify individuals who should take the preventive actions mentioned above.  
+In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset). I'll go through the major steps in Machine Learning to build and evaluate models to predict whether or not an individual is likely to have a stroke. This doesn't necessarily calculate a lifetime risk of stroke or chances of an acute stroke, but it can identify high-risk individuals who should take the preventive actions mentioned above.  
 
 ## Analysis Highlights
 - Exploratory Data Analysis: 
   - Dataset of 5110 individuals with features such as gender, age, BMI, and presence/absense of heart disease and hypertension
   - Highly unbalanced target: only 5% had a stroke
 - Dealing with unbalanced binary classification
-  - Compared Weighted Logistic Regression vs. Logistic Regression w/ SMOTE (Sythetic Minority Oversampling TEchnique)
+  - I compared Weighted Logistic Regression to Logistic Regression w/ SMOTE (Sythetic Minority Oversampling TEchnique)
 - Choosing a Model
   - Compared Logistic Regression, Decision Tree, Random Forest, SVM, Gradient Boosting, XGBoost, KNN (all w/ SMOTE)
 - Hyperparameter Tuning
   - Chose top three performers: Logistic Regression, SVM, and XGBoost
   - Used GridSearchCV to perform hyperparameter tuning optimized for f1 score, then for recall
 - Evaluating Models
-  - This was difficult with this dataset. I would like to choose a model with the highest recall so as to not miss any strokes. However, high recall comes at the cost of very low precision and therefore many false positives. For the sake of argument, let's say we are identifying individuals at higher risk of stroke so that they can focus on healthy living, as opposed to identifying them for some invasive testing. In this case, the cost of false positives is low so we can go back to focusing on recall as the primary metric. 
+  - This was difficult with this dataset. I would like to choose a model with the highest recall so as to not miss any high-risk individuals. However, high recall comes at the cost of very low precision and therefore many false positives. For the sake of argument, let's say we are identifying individuals at higher risk of stroke so that they can focus on healthy living, as opposed to identifying them for some invasive testing. In this case, the cost of false positives is low so we can go back to focusing on recall as the primary metric. 
   - Given the above assumptions, the two best models were:
     - **Non-optimized Weighted Logistic Regression**
       - Recall of 98.2% 
