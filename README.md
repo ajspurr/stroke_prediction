@@ -16,16 +16,16 @@ In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.k
   - Used GridSearchCV to perform hyperparameter tuning optimized for f1 score, then for recall
 - Evaluating Models
   - I chose to focus on recall as the primary metric of evaluation (discussed the cost of poor precision at the end of the project). As such, the two best models were:
-    - **Non-optimized Weighted Logistic Regression**
-      - Recall of 98.2% 
-        - Out of 4,088 individuals in the test set, missed 1 stroke out of 55
-      - Precision of 7% 
-        - 714 false positives in the same test set
-    - **Optimized Weighted XGBoost**
-      - Recall of 91.7%
-        - Out of 4,088 individuals in the test set, missed 4.5 strokes out of 55 (the fraction is because this is an average of the cross-validated recalls)
-      - Precision of 11.1%
-        - 404 false positives in the same test set
+  - **Non-optimized Weighted Logistic Regression**
+    - Recall of 98.2% 
+      - Out of 4,088 individuals in the test set, missed 1 stroke out of 55
+    - Precision of 7% 
+      - 714 false positives in the same test set
+  - **Optimized Weighted XGBoost**
+    - Recall of 91.7%
+      - Out of 4,088 individuals in the test set, missed 4.5 strokes out of 55 (the fraction is because this is an average of the cross-validated recalls)
+    - Precision of 11.1%
+      - 404 false positives in the same test set
 
 ## Programming Language and Resource Details
 **Python Version:** 3.8.8
