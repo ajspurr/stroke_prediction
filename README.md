@@ -15,8 +15,7 @@ In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.k
   - Chose top three performers: Logistic Regression, SVM, and XGBoost
   - Used GridSearchCV to perform hyperparameter tuning optimized for f1 score, then for recall
 - Evaluating Models
-  - Choosing an appropriate metric was difficult. I would like to choose a model with the highest recall so as to not miss any high-risk individuals. However, high recall came at the cost of very low precision and therefore many false positives. For the sake of argument, let's say we are identifying high-risk individuals so that they can focus on healthy habits, as opposed to identifying them for some invasive testing. This limits the cost of false-positives to unecessary stress on individuals wrongly classified as high-risk. For this analysis, I will still prioritize recall, although this trade-off should be discussed with clinicians using the model. 
-  - Given the above assumptions, the two best models were:
+  - I chose to focus on recall as the primary metric of evaluation (discussed at the end of the project). As such, the two best models were:
     - **Non-optimized Weighted Logistic Regression**
       - Recall of 98.2% 
         - Out of 4,088 individuals in the test set, missed 1 stroke out of 55
