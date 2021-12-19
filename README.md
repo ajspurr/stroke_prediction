@@ -15,7 +15,7 @@ In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.k
   - Chose top three performers: Logistic Regression, SVM, and XGBoost
   - Used GridSearchCV to perform hyperparameter tuning optimized for f1 score, then for recall
 - Evaluating Models
-  - I chose to focus on recall as the primary metric of evaluation (discussed at the end of the project). As such, the two best models were:
+  - I chose to focus on recall as the primary metric of evaluation (discussed the cost of poor precision at the end of the project). As such, the two best models were:
     - **Non-optimized Weighted Logistic Regression**
       - Recall of 98.2% 
         - Out of 4,088 individuals in the test set, missed 1 stroke out of 55
