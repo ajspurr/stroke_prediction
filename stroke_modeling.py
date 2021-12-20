@@ -371,7 +371,7 @@ def plot_model_metrics_combined(model_name, model_display_name, conmat, conmat_d
     #fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
     plt.subplots_adjust(hspace=0.3, wspace=0.2) # Increase spacing between plots if tight_layout doesn't work
     save_filename = 'eval_metrics_' + model_name
-    save_image(output_dir, save_filename, bbox_inches='tight')
+    #save_image(output_dir, save_filename, bbox_inches='tight')
     plt.show()
     
 # ====================================================================================================================
@@ -529,7 +529,7 @@ fig.suptitle('Pre- and Post-SMOTE PCA', fontsize=24)
 fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
 #plt.subplots_adjust(hspace=0.3, wspace=0.2) # Increase spacing between plots if tight_layout doesn't work
 save_filename = 'pre_post_smote_pca'
-save_image(output_dir, save_filename, bbox_inches='tight')
+#save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 # =============================
@@ -575,7 +575,7 @@ lr_final_results = lr_final_results.apply(pd.to_numeric)
 sns.heatmap(data=lr_final_results.T, annot=True, cmap="Blues", fmt=".3")
 plt.yticks(rotation=0)  # Rotate y-tick labels to be horizontal
 plt.title('Comparison of Three Logistic Regression Models')
-#save_filename = 'lr_all_metrics'
+save_filename = 'lr_all_metrics'
 #save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
@@ -681,7 +681,7 @@ sns.heatmap(data=final_results.T, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
 plt.title('Model Metrics post-SMOTE')
 save_filename = 'metrics_multiple_models_smote'
-save_image(output_dir, save_filename, bbox_inches='tight')
+#save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 # Logistic Regression Ranks close to the top in all metrics, let's look at the rest and reset the heatmap colors
@@ -857,7 +857,7 @@ sns.heatmap(data=combined_xgb, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
 plt.title('XGBoost Combined Metrics (optimized for f1 score)')
 save_filename = 'combined_metrics_xgb'
-save_image(output_dir, save_filename, bbox_inches='tight')
+#save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 
@@ -934,7 +934,7 @@ sns.heatmap(data=combined_lr, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
 plt.title('Log Reg Combined Metrics (optimized for f1 score)')
 save_filename = 'combined_metrics_lr'
-save_image(output_dir, save_filename, bbox_inches='tight')
+#save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 
@@ -1008,7 +1008,7 @@ sns.heatmap(data=combined_svm, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
 plt.title('SVM Combined Metrics (optimized for f1 score)')
 save_filename = 'combined_metrics_svm'
-save_image(output_dir, save_filename, bbox_inches='tight')
+#save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 
@@ -1024,7 +1024,7 @@ sns.heatmap(data=combined_opt, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
 plt.title('Best models (optimized for f1 score)')
 save_filename = 'combined_metrics_best_f1'
-save_image(output_dir, save_filename, bbox_inches='tight')
+#save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 
@@ -1269,16 +1269,16 @@ combined_opt_recall = pd.concat([return_results_xgb_w_r.T,
                                  return_results_svm_t_s_r.T], 
                                    axis=1, join='inner')
 
-combined_opt_recall.columns = ['Optimized Weighted XGB', 
-                                  'Optimized XGB SMOTE', 
-                                  'Optimized Weighted LR',
-                                  'Optimized LR SMOTE',
-                                  'Optimized Weighted SVM',
-                                  'Optimized SVM SMOTE']
+combined_opt_recall.columns = ['Optimized Weighted XGB',
+                               'Optimized XGB SMOTE',
+                               'Optimized Weighted LR',
+                               'Optimized LR SMOTE',
+                               'Optimized Weighted SVM',
+                               'Optimized SVM SMOTE']
 
 sns.heatmap(data=combined_opt_recall, annot=True, cmap="Blues", fmt=".3")
 plt.xticks(rotation=30, horizontalalignment='right')  # Rotate y-tick labels to be horizontal# Rotate x-axis tick labels so they don't overlap
 plt.title('Combined Optimized Models (for recall)')
 save_filename = 'combined_metrics_recall'
-save_image(output_dir, save_filename, bbox_inches='tight')
+#save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
