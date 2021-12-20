@@ -1,26 +1,31 @@
 # Stroke Prediction
-About 800,000 people in the United States have a stroke each year. It is a leading cause of serioues long-term disability ([CDC](https://www.cdc.gov/stroke/facts.htm)). Fortunately, there are actions you can take to prevent or lower your chances of having a stroke such as eating healthy, maintaining a healthy weight, excercising, abstaining from smoking, and limiting alcohol consumption. While everyone should follow these healthy habits, it can be helpful to identify individuals at high risk of stroke so they can pay especially close attention to their daily habits and make sure their chronic conditions (e.g. diabetes, hypertension) are well-controlled.
+About 800,000 people in the United States have a stroke each year, making it a leading cause of serious long-term disability ([CDC](https://www.cdc.gov/stroke/facts.htm)). Fortunately, there are actions you can take to prevent or lower your chances of having a stroke such as eating healthy, maintaining a healthy weight, excercising, and abstaining from smoking. While everyone should follow these healthy habits, it can be helpful to identify individuals at high risk of stroke so they can pay especially close attention to their daily habits and make sure their chronic conditions (e.g. diabetes, hypertension) are well-controlled.
 
-In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset). I'll go through the major steps in Machine Learning to build and evaluate models to predict whether or not an individual is likely to have a stroke. This doesn't necessarily calculate a lifetime risk of stroke or chances of an acute stroke. But it can identify individuals who should take the preventive actions mentioned above.  
+In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset). I'll go through the major steps in Machine Learning to build and evaluate models to predict whether or not an individual is likely to have a stroke. This doesn't necessarily calculate a lifetime risk of stroke or chances of an acute stroke, but it can identify high-risk individuals who should take the preventive actions mentioned above.  
 
 ## Analysis Highlights
 - Exploratory Data Analysis: 
   - Dataset of 5110 individuals with features such as gender, age, BMI, and presence/absense of heart disease and hypertension
-  - Highly unbalanced target: only 5% had a stroke
-- Data Preparation
-  - Imputation, scaling, categorical variable encoding
-- Dealing with unbalanced binary classification
-  - Started with Logistic Regression model
-  - Compared implementing Weighted Logistic Regression vs. Logistic Regression w/ SMOTE (Sythetic Minority Oversampling TEchnique)
+  - Highly imbalanced target: only 5% had a stroke
+- Dealing with imbalanced binary classification
+  - I compared Weighted Logistic Regression to Logistic Regression w/ SMOTE (Synthetic Minority Oversampling TEchnique)
 - Choosing a Model
   - Compared Logistic Regression, Decision Tree, Random Forest, SVM, Gradient Boosting, XGBoost, KNN (all w/ SMOTE)
 - Hyperparameter Tuning
   - Chose top three performers: Logistic Regression, SVM, and XGBoost
-  - Used GridSearchCV to perform hyperparameter tuning optimized for f1 score, then for recall
-  - Continued to compare to strategies of dealing with imbalanced target (weighting vs. SMOTE) for each model
-- Model Evaluation
-  - I chose to primarily evaluate models based on recall (sensitivity) as it is important to identify all individuals at high risk of stroke
-  - In addition to recall, I looked at precision and f1 as they focus more on the positive cases (stroke) than negative cases, which is important both clinically and analytically as the positive cases are also the minority class.
+  - Used GridSearchCV to perform hyperparameter tuning optimized for recall and f1 score
+- Evaluating Models
+  - I chose to focus on recall as the primary metric of evaluation (discussed the cost of poor precision at the end of the project). As such, the two best models were:
+  - **Non-optimized Weighted Logistic Regression**
+    - Recall of 98.2% 
+      - Out of 4,088 individuals in the test set, missed 1 stroke out of 55
+    - Precision of 7% 
+      - 714 false positives in the same test set
+  - **Optimized Weighted XGBoost**
+    - Recall of 91.7%
+      - Out of 4,088 individuals in the test set, missed 4.5 strokes out of 55 (the fraction is because this is an average of the cross-validated recalls)
+    - Precision of 11.1%
+      - 404 false positives in the same test set
 
 ## Programming Language and Resource Details
 **Python Version:** 3.8.8
@@ -188,13 +193,25 @@ The non-optimized Weighted LR still has the highest recall by far, although it h
 Repeated the same hyperparameter parameter tuning as above, but optized for recall instead of f1 score. As seen below, a couple of the weighted models reached a recall of 100%, catching all strokes. However, it looks like they may have predicted all individuals to have a stroke, as their accuracy was 5% and specificity was 0%. More precise hyperparameter tuning needs to be done. This can be explored in the future (see below)
 <p align="center"><img src="/output/models/combined_metrics_recall.png" width="900"/></p> <br>
 
-
+## Evaluating Models
+- Choosing an appropriate metric was difficult. I would like to choose a model with the highest recall so as to not miss any high-risk individuals. However, high recall came at the cost of very low precision and therefore many false positives. For the sake of argument, let's say we are identifying high-risk individuals so that they can focus on healthy habits, as opposed to identifying them for some invasive testing. This limits the cost of false-positives to unecessary stress on individuals wrongly classified as high-risk. For this analysis, I will still prioritize recall, although this trade-off should be discussed with clinicians using the model. 
+- Given the above assumptions, the two best models were:
+  - **Non-optimized Weighted Logistic Regression**
+    - Recall of 98.2% 
+      - Out of 4,088 individuals in the test set, missed 1 stroke out of 55
+    - Precision of 7% 
+      - 714 false positives in the same test set
+  - **Optimized Weighted XGBoost**
+    - Recall of 91.7%
+      - Out of 4,088 individuals in the test set, missed 4.5 strokes out of 55 (the fraction is because this is an average of the cross-validated recalls)
+    - Precision of 11.1%
+      - 404 false positives in the same test set
 
 ## Potential Next Steps
 - Improve predictions
-  - Try to optimize different models (e.g. KNN, Random Forest)
   - Improve hyperparameter tuning of current models
-    - Explore further on how to optimize models for unbalanced data
+    - Explore how to further optimize models for unbalanced data
     - More precise hyperparameter tuning
   - Explore feature engineering and feature importance
+  - Optimize and compare other models (e.g. KNN, Random Forest)
 - Productionize chosen model
