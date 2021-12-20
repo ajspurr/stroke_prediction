@@ -6,8 +6,8 @@ In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.k
 ## Analysis Highlights
 - Exploratory Data Analysis: 
   - Dataset of 5110 individuals with features such as gender, age, BMI, and presence/absense of heart disease and hypertension
-  - Highly unbalanced target: only 5% had a stroke
-- Dealing with unbalanced binary classification
+  - Highly imbalanced target: only 5% had a stroke
+- Dealing with imbalanced binary classification
   - I compared Weighted Logistic Regression to Logistic Regression w/ SMOTE (Synthetic Minority Oversampling TEchnique)
 - Choosing a Model
   - Compared Logistic Regression, Decision Tree, Random Forest, SVM, Gradient Boosting, XGBoost, KNN (all w/ SMOTE)
