@@ -140,7 +140,7 @@ def create_pipeline(model_name, model, use_SMOTE):
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
 def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model, model_name, 
-                   model_display_name, create_graphs=True, combine_graphs=True, round_results=3):  
+                   model_display_name, create_graphs=True, combine_graphs=True, export_graphs=False, round_results=3):  
     # =============================
     # Accuracy
     # =============================
@@ -240,16 +240,19 @@ def evaluate_model(X_train, X_valid, y_train, y_valid, y_pred, pipeline_or_model
     # =============================
     if (create_graphs):
         if (combine_graphs):
-            plot_model_metrics_combined(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline)
+            plot_model_metrics_combined(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, 
+                                        AUC, precision, recall, prc_thresholds, AUPRC, baseline, export_graphs=export_graphs)
         else:
-            plot_model_metrics(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline)
+            plot_model_metrics(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, 
+                               AUC, precision, recall, prc_thresholds, AUPRC, baseline, export_graphs=export_graphs)
     
     return metrics, conmat_df
 
 # Takes evalution metrics from evaluate_model() and plots confusion matrix, ROC, PRC, and precision/recall vs. threshold
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
-def plot_model_metrics(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
+def plot_model_metrics(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, 
+                       AUC, precision, recall, prc_thresholds, AUPRC, baseline, export_graphs):
     # =============================
     # Heatmap of confusion matrix
     # =============================
@@ -307,7 +310,8 @@ def plot_model_metrics(model_name, model_display_name, conmat, conmat_df_perc, f
 
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
-def plot_model_metrics_combined(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, AUC, precision, recall, prc_thresholds, AUPRC, baseline):
+def plot_model_metrics_combined(model_name, model_display_name, conmat, conmat_df_perc, fpr, tpr, 
+                                AUC, precision, recall, prc_thresholds, AUPRC, baseline, export_graphs):
     # Create figure, gridspec, list of axes/subplots mapped to gridspec location
     fig, gs, ax_array_flat = initialize_fig_gs_ax(num_rows=2, num_cols=2, figsize=(14, 8))
    
@@ -371,7 +375,8 @@ def plot_model_metrics_combined(model_name, model_display_name, conmat, conmat_d
     #fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
     plt.subplots_adjust(hspace=0.3, wspace=0.2) # Increase spacing between plots if tight_layout doesn't work
     save_filename = 'eval_metrics_' + model_name
-    #save_image(output_dir, save_filename, bbox_inches='tight')
+    if (export_graphs):
+        save_image(output_dir, save_filename, bbox_inches='tight')
     plt.show()
     
 # ====================================================================================================================
@@ -723,7 +728,7 @@ plt.show()
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
 # The recall and precision that are returned are the mean cross-validated values
-def gridsearch_results(model_name, model_display_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True):
+def gridsearch_results(model_name, model_display_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True, export_graphs=False):
     # Create GridSearch object and fit data
     grid_search = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, refit=refit, n_jobs=n_jobs, cv=cv, verbose=verbose)
     grid_search.fit(X_train, y_train)
@@ -746,7 +751,8 @@ def gridsearch_results(model_name, model_display_name, estimator, param_grid, sc
     y_pred_gs = pipeline_gs.predict(X_valid)
     
     # Get results using my function
-    results_gs, conmat_gs = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_gs, pipeline_gs, model_name, model_display_name, create_graphs=False)
+    results_gs, conmat_gs = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_gs, pipeline_gs, 
+                                           model_name, model_display_name, create_graphs=False, export_graphs=export_graphs)
     
     # Combine most important results into one dataframe
     return_metrics = ['Accuracy', 'Sensitivity (recall, CV)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1 (CV)']
