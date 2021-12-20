@@ -209,9 +209,9 @@ Repeated the same hyperparameter parameter tuning as above, but optized for reca
 
 ## Potential Next Steps
 - Improve predictions
-  - Try to optimize different models (e.g. KNN, Random Forest)
   - Improve hyperparameter tuning of current models
-    - Explore further on how to optimize models for unbalanced data
+    - Explore how to further optimize models for unbalanced data
     - More precise hyperparameter tuning
   - Explore feature engineering and feature importance
+  - Optimize and compare other models (e.g. KNN, Random Forest)
 - Productionize chosen model
