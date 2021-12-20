@@ -1159,6 +1159,24 @@ grid_search_obj_xgb_w_r, return_results_xgb_w_r = gridsearch_results_complete(mo
                                                              export_graphs=True)
 
 # =============================
+# Picke (export) model for productionization
+# =============================
+import pickle
+pickle_model_name = 'xgboost_w_r'
+pickle_model_filename = pickle_model_name + 'model_file.p'
+
+pickle_dict = {pickle_model_name: grid_search_obj_xgb_w_r.best_estimator_}
+pickle.dump(pickle_dict, open(pickle_model_filename, "wb" ))
+
+# Test model export by importing it and using it to predict a stroke off the first row data
+with open(pickle_model_filename, 'rb') as pickled:
+    data = pickle.load(pickled)
+    loaded_model = data[pickle_model_name]
+
+prediction = loaded_model.predict(X_valid.iloc[[0]])[0]
+
+
+# =============================
 # XGBoost with hyperparameter tuning with SMOTE
 # =============================
 model_name = 'xgboost_t_s_r'
