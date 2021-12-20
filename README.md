@@ -203,9 +203,9 @@ Repeated the same hyperparameter parameter tuning as above, but optized for reca
       - 714 false positives in the same test set
   - **Optimized Weighted XGBoost**
     - Recall of 91.7%
-      - Out of 4,088 individuals in the test set, missed 4.5 strokes out of 55 (the fraction is because this is an average of the cross-validated recalls)
+      - Out of 4,088 individuals in the test set, missed 4 strokes out of 55
     - Precision of 11.1%
-      - 404 false positives in the same test set
+      - 408 false positives in the same test set
 
 ## Potential Next Steps
 - Improve predictions
