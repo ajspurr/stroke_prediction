@@ -96,6 +96,7 @@ def initialize_fig_gs_ax(num_rows, num_cols, figsize=(16, 8)):
 # Standardize image saving parameters
 def save_image(dir, filename, dpi=300, bbox_inches='tight'):
     plt.savefig(dir/filename, dpi=dpi, bbox_inches=bbox_inches)
+    print("Saved image to '" + dir/filename +"'")
 # ====================================================================================================================
 # Data preprocessing function via pipeline
 # ====================================================================================================================
@@ -728,7 +729,7 @@ plt.show()
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
 # The recall and precision that are returned are the mean cross-validated values
-def gridsearch_results(model_name, model_display_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True, export_graphs=False):
+def gridsearch_results(model_name, model_display_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True, create_graphs=True, export_graphs=False):
     # Create GridSearch object and fit data
     grid_search = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, refit=refit, n_jobs=n_jobs, cv=cv, verbose=verbose)
     grid_search.fit(X_train, y_train)
@@ -752,7 +753,7 @@ def gridsearch_results(model_name, model_display_name, estimator, param_grid, sc
     
     # Get results using my function
     results_gs, conmat_gs = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_gs, pipeline_gs, 
-                                           model_name, model_display_name, create_graphs=False, export_graphs=export_graphs)
+                                           model_name, model_display_name, create_graphs=create_graphs, export_graphs=export_graphs)
     
     # Combine most important results into one dataframe
     return_metrics = ['Accuracy', 'Sensitivity (recall, CV)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1 (CV)']
@@ -1045,7 +1046,7 @@ plt.show()
 # Parameter 'model_name' will be used for coding and saving images
 # Parameter 'model_display_name' will be used for plot labels
 # The recall and precision that are returned are the mean cross-validated values
-def gridsearch_results_complete(model_name, model_display_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True):
+def gridsearch_results_complete(model_name, model_display_name, estimator, param_grid, scoring, refit, n_jobs=10, cv=10, verbose=True, create_graphs=True, export_graphs=False):
     # Create GridSearch object and fit data
     grid_search = GridSearchCV(estimator=estimator, param_grid=param_grid, scoring=scoring, refit=refit, n_jobs=n_jobs, cv=cv, verbose=verbose)
     grid_search.fit(X_train, y_train)
@@ -1072,7 +1073,8 @@ def gridsearch_results_complete(model_name, model_display_name, estimator, param
     y_pred_gs = pipeline_gs.predict(X_valid)
     
     # Get results using my function
-    results_gs, conmat_gs = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_gs, pipeline_gs, model_name, model_display_name, create_graphs=False)
+    results_gs, conmat_gs = evaluate_model(X_train, X_valid, y_train, y_valid, y_pred_gs, pipeline_gs, 
+                                           model_name, model_display_name, create_graphs=create_graphs, export_graphs=export_graphs)
     
     # Combine most important results into one dataframe
     return_metrics = ['Accuracy', 'Sensitivity (recall, CV)', 'Specificity', 'AUROC', 'PPV (precision)', 'NPV', 'AUPRC', 'f1 (CV)']
@@ -1153,7 +1155,8 @@ grid_search_obj_xgb_w_r, return_results_xgb_w_r = gridsearch_results_complete(mo
                                                              estimator=xgb_w_r_pipeline, 
                                                              param_grid=xgb_w_r_parameters, 
                                                              scoring=['f1', 'recall'], refit='recall', 
-                                                             n_jobs=10, cv=10, verbose=3)
+                                                             n_jobs=10, cv=10, verbose=3, create_graphs=True, 
+                                                             export_graphs=True)
 
 # =============================
 # XGBoost with hyperparameter tuning with SMOTE
