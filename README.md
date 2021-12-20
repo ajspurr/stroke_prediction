@@ -13,7 +13,7 @@ In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.k
   - Compared Logistic Regression, Decision Tree, Random Forest, SVM, Gradient Boosting, XGBoost, KNN (all w/ SMOTE)
 - Hyperparameter Tuning
   - Chose top three performers: Logistic Regression, SVM, and XGBoost
-  - Used GridSearchCV to perform hyperparameter tuning optimized for f1 score, then for recall
+  - Used GridSearchCV to perform hyperparameter tuning optimized for recall and f1 score
 - Evaluating Models
   - I chose to focus on recall as the primary metric of evaluation (discussed the cost of poor precision at the end of the project). As such, the two best models were:
   - **Non-optimized Weighted Logistic Regression**
