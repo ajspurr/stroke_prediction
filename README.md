@@ -77,7 +77,7 @@ Ordinal encoding would not be useful as categorical variables are not ordinal. O
 Fortunately, data was well-formatted. Replaced 0s and 1s in 'hypertension' and 'heart_disease' columns with more descriptive strings so that one-hot encoded columns are easier to interpret. 
 
 #### Feature Engineering
-Did not find obvious opportunities for feature engineering, but can explore this in the future.
+Did not find obvious opportunities for feature engineering, but I can explore this in the future.
 
 <br>
 
@@ -102,7 +102,7 @@ Logistic regression works by fitting curves to the training dataset. It repeated
 <p align="center"><img src="/output/models/eval_metrics_log_reg_weighted.png" width="900"/></p> 
 <img src="/output/models/metrics_log_reg_w.png" width="280"/>
 
-You can see a dramatic improvement in recall from 0 to 98%. This model missed only 1 stroke out of 55, which is great. The tradeoff is that there were 714 cases where the model wrongly predicited a stroke (compared to 0 before). This is reflected in the low precision of 7%. You can see this visually in the bottom right Precision/Recall vs. Threshold graph. The recall holds its high value for much longer, but the precision holds its low value longer as well. The weights can be tuned to optimize the balance between false positives and false negatives using sklearn GridSearchCV. This will be explore below. 
+You can see a dramatic improvement in recall from 0 to 98%. This model missed only 1 stroke out of 55, which is great. The tradeoff is that there were 714 cases where the model wrongly predicited a stroke (compared to 0 before). This is reflected in the low precision of 7%. You can see this visually in the bottom right Precision/Recall vs. Threshold graph. The recall holds its high value for much longer, but the precision holds its low value longer as well. The weights can be tuned to optimize the balance between false positives and false negatives using sklearn GridSearchCV. This will be explored below. 
 
 #### Option 2: Oversampling
 Another way to deal with an imbalanced dataset is to either remove rows from the majority class (undersampling) or to add rows to the minority class (oversampling). This dataset isn't huge so removing data probably isn't the best choice. For oversampling, you can simply duplicate rows from the minority class, which doesn't add new information to the model, or you can synthesize new minority class data using SMOTE (Sythetic Minority Oversampling TEchnique). The technical details can be found in the source below, but the point is that it generates new minority class examples that are similar to the existing minority class data. 
@@ -116,7 +116,7 @@ The plot to the left is a PCA of the original dataset. The plot to the right is 
 <p align="center"><img src="/output/models/eval_metrics_log_reg_smote.png" width="900"/></p> 
 <img src="/output/models/metrics_log_reg_smote.png" width="300"/>
 
-Compared to weighted logistic regression, this model has a bit more balance of recall and precision. The recall decreased from 98% to 82% and the precision increased from 7% to 15%. It missed 10 strokes out of 55 (compared to missing just 1) but it only wrongly predicted a stroke 251 times (compared to 714).  
+Compared to weighted logistic regression, this model has a bit more balance of recall and precision. The recall decreased from 98% to 82% and the precision increased from 7% to 15%. It missed 10 strokes out of 55 (compared to missing just 1) but it only wrongly predicted a stroke 251 times (compared to 714). The f1 score (harmonic mean of recall and precision) increased from 0.13 to 0.26.
 
 #### Putting It All Together
 The heatmap below compares the performance metrics of logistic regression, weighted logistic regression, and logistic regression post-SMOTE. As mentioned above, the most important metric is recall, as you do not want to miss any stroke cases. In this regard, weighted logistic regression was by far the best. Logistic regression post-SMOTE had a significantly lower recall with a minimal increase in precision (and no increase in AUPRC, or average precision). This also resulted in a higher f1 value, which is the harmonic mean of recall and precision. 
@@ -134,9 +134,9 @@ As seen above, logistic regression and SVM had the highest recall, followed by g
 I initially chose to optimize hyperparameters based on f1 score as this is a well-rounded measure of performance that incorporates recall and precision. The argument could be made to optimize solely on recall so as to minimize false negatives. This is explored at the end. 
 
 ### XGBoost
-**Hyperparameter tuning values** ([1](https://www.mikulskibartosz.name/xgboost-hyperparameter-tuning-in-python-using-grid-search/), [2](https://towardsdatascience.com/binary-classification-xgboost-hyperparameter-tuning-scenarios-by-non-exhaustive-grid-search-and-c261f4ce098d), [3](https://machinelearningmastery.com/xgboost-for-imbalanced-classification/))
-- max_depth: range (2, 10, 1)
-- n_estimators: range(60, 220, 40)
+**Hyperparameter tuning values** (References: [1](https://www.mikulskibartosz.name/xgboost-hyperparameter-tuning-in-python-using-grid-search/), [2](https://towardsdatascience.com/binary-classification-xgboost-hyperparameter-tuning-scenarios-by-non-exhaustive-grid-search-and-c261f4ce098d), [3](https://machinelearningmastery.com/xgboost-for-imbalanced-classification/))
+- max_depth: [2, 3, 4, 5, 6, 7, 8, 9]
+- n_estimators: [60, 100, 140, 180]
 - learning_rate: [0.1, 0.01, 0.05]
 - scale_pos_weight: weights
   - Like the weighted logistic regression, I based the 'weights' on the inverse class distribution in the training data. In this case, there are 194 individuals with stroke and 3894 without a stroke. So the inverse class distribution is 3894/194 = 20. Then for hyperparameter tuning, I added 4 more values to try: the inverse class distribution +/- 25% and +/- 50%. 
@@ -152,7 +152,7 @@ The first column is the orginal non-optimized XGBoost with SMOTE. Weighted XGBoo
 <p align="center"><img src="/output/models/combined_metrics_xgb.png" width="900"/></p> 
 
 ### Logistic Regression
-**Hyperparameter tuning values** ([1](https://machinelearningknowledge.ai/hyperparameter-tuning-with-sklearn-gridsearchcv-and-randomizedsearchcv/), [2](https://machinelearningmastery.com/xgboost-for-imbalanced-classification/))
+**Hyperparameter tuning values** (References: [1](https://machinelearningknowledge.ai/hyperparameter-tuning-with-sklearn-gridsearchcv-and-randomizedsearchcv/), [2](https://machinelearningmastery.com/xgboost-for-imbalanced-classification/))
 - C: np.logspace(-3, 3, 20)
 - penalty: ['l2']
 - class_weight: weights (weights derived similarly to XGBoost above)
@@ -167,7 +167,7 @@ The first column is the orginal non-optimized Weighted Logistic Regression. The 
 <p align="center"><img src="/output/models/combined_metrics_lr.png" width="900"/></p> 
 
 ### SVM
-**Hyperparameter tuning values** ([1](https://machinelearningknowledge.ai/hyperparameter-tuning-with-sklearn-gridsearchcv-and-randomizedsearchcv/))
+**Hyperparameter tuning values** (Reference: [1](https://machinelearningknowledge.ai/hyperparameter-tuning-with-sklearn-gridsearchcv-and-randomizedsearchcv/))
 - C: [0.1, 1, 10, 100, 1000]
 - gamma: [1, 0.1, 0.01, 0.001, 0.0001]
 - kernel: ['rbf']
