@@ -49,7 +49,7 @@ Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/
 
 <br><p align="center"><img src="/output/eda/combined_perc_stroke.png" width="900"/></p> 
 <br>
-4. All continuous variables have somewhat normal or uniform distribution, 'avg_glucose_level' with a positive skew and somewhat bimodal and BMI with a slight positive skew. Features 'age' and 'avg_glucose_level' with observable difference in distribution in stroke vs. no stroke
+4. The continuous variable 'age' is somewhat uniform but with a negative skew. Variable 'avg_glucose_level' has a strong positive skew and is somewhat bimodal. 'BMI' is fairly normal, with a slight positive skew. Features 'age' and 'avg_glucose_level' with observable difference in distribution in stroke vs. no stroke
 
 <br><p align="center"><img src="/output/eda/combined_dist.png" width="900"/></p> 
 <br>
