@@ -213,5 +213,6 @@ Repeated the same hyperparameter parameter tuning as above, but optized for reca
     - Explore how to further optimize models for unbalanced data
     - More precise hyperparameter tuning
   - Explore feature engineering and feature importance
+  - Outlier identification
   - Optimize and compare other models (e.g. KNN, Random Forest)
 - Productionize chosen model
