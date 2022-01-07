@@ -1,11 +1,11 @@
-import pandas as pd
 import numpy as np
-import scipy.stats as ss
+import pandas as pd
 from os import chdir
-from pathlib import PureWindowsPath, Path
 import seaborn as sns 
+import scipy.stats as ss
 import matplotlib.pyplot as plt
 from sklearn.impute import SimpleImputer
+from pathlib import PureWindowsPath, Path
 
 # Read in data
 project_dir = PureWindowsPath(r"D:\GitHubProjects\stroke_prediction\\")
