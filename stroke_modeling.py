@@ -136,6 +136,48 @@ def create_pipeline(model_name, model, use_SMOTE):
     return my_pipeline
 
 # ====================================================================================================================
+# Data preprocessing function without using pipeline
+# ====================================================================================================================
+def manual_preprocess(X_train, X_valid):
+    # =============================
+    # Numerical preprocessing
+    # =============================
+    X_train_num = X_train[numerical_cols]
+    X_valid_num = X_valid[numerical_cols]
+    
+    # Imputation (default strategy='mean')
+    num_imputer = SimpleImputer()
+    imputed_X_train_num = pd.DataFrame(num_imputer.fit_transform(X_train_num), columns=X_train_num.columns, index=X_train_num.index)
+    imputed_X_valid_num = pd.DataFrame(num_imputer.transform(X_valid_num), columns=X_valid_num.columns, index=X_valid_num.index)
+    
+    # Scaling
+    ss = StandardScaler()
+    imputed_scaled_X_train_num = pd.DataFrame(ss.fit_transform(imputed_X_train_num), columns=X_train_num.columns, index=X_train_num.index)
+    imputed_scaled_X_valid_num = pd.DataFrame(ss.transform(imputed_X_valid_num), columns=X_valid_num.columns, index=X_valid_num.index)
+    
+    # =============================
+    # Categorical preprocessing
+    # =============================
+    X_train_cat = X_train[categorical_cols]
+    X_valid_cat = X_valid[categorical_cols]
+    
+    # Imputation
+    cat_imputer = SimpleImputer(strategy='most_frequent')
+    imputed_X_train_cat = pd.DataFrame(cat_imputer.fit_transform(X_train_cat), columns=X_train_cat.columns, index=X_train_cat.index)
+    imputed_X_valid_cat = pd.DataFrame(cat_imputer.transform(X_valid_cat), columns=X_valid_cat.columns, index=X_valid_cat.index)
+    
+    # One-hot encoding
+    OH_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
+    OH_cols_train = pd.DataFrame(OH_encoder.fit_transform(imputed_X_train_cat), index=X_train_cat.index, columns=OH_encoder.get_feature_names_out())
+    OH_cols_valid = pd.DataFrame(OH_encoder.transform(imputed_X_valid_cat), index=X_valid_cat.index, columns=OH_encoder.get_feature_names_out())
+    
+    # Add preprocessed categorical columns back to preprocessed numerical columns
+    X_train_processed = pd.concat([imputed_scaled_X_train_num, OH_cols_train], axis=1)
+    X_valid_processed = pd.concat([imputed_scaled_X_valid_num, OH_cols_valid], axis=1)
+    
+    return X_train_processed, X_valid_processed
+
+# ====================================================================================================================
 # Model evaluation function
 # ====================================================================================================================
 # Parameter 'model_name' will be used for coding and saving images
@@ -380,47 +422,6 @@ def plot_model_metrics_combined(model_name, model_display_name, conmat, conmat_d
         save_image(output_dir, save_filename, bbox_inches='tight')
     plt.show()
     
-# ====================================================================================================================
-# Data preprocessing function without using pipeline
-# ====================================================================================================================
-def manual_preprocess(X_train, X_valid):
-    # =============================
-    # Numerical preprocessing
-    # =============================
-    X_train_num = X_train[numerical_cols]
-    X_valid_num = X_valid[numerical_cols]
-    
-    # Imputation (default strategy='mean')
-    num_imputer = SimpleImputer()
-    imputed_X_train_num = pd.DataFrame(num_imputer.fit_transform(X_train_num), columns=X_train_num.columns, index=X_train_num.index)
-    imputed_X_valid_num = pd.DataFrame(num_imputer.transform(X_valid_num), columns=X_valid_num.columns, index=X_valid_num.index)
-    
-    # Scaling
-    ss = StandardScaler()
-    imputed_scaled_X_train_num = pd.DataFrame(ss.fit_transform(imputed_X_train_num), columns=X_train_num.columns, index=X_train_num.index)
-    imputed_scaled_X_valid_num = pd.DataFrame(ss.transform(imputed_X_valid_num), columns=X_valid_num.columns, index=X_valid_num.index)
-    
-    # =============================
-    # Categorical preprocessing
-    # =============================
-    X_train_cat = X_train[categorical_cols]
-    X_valid_cat = X_valid[categorical_cols]
-    
-    # Imputation
-    cat_imputer = SimpleImputer(strategy='most_frequent')
-    imputed_X_train_cat = pd.DataFrame(cat_imputer.fit_transform(X_train_cat), columns=X_train_cat.columns, index=X_train_cat.index)
-    imputed_X_valid_cat = pd.DataFrame(cat_imputer.transform(X_valid_cat), columns=X_valid_cat.columns, index=X_valid_cat.index)
-    
-    # One-hot encoding
-    OH_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
-    OH_cols_train = pd.DataFrame(OH_encoder.fit_transform(imputed_X_train_cat), index=X_train_cat.index, columns=OH_encoder.get_feature_names_out())
-    OH_cols_valid = pd.DataFrame(OH_encoder.transform(imputed_X_valid_cat), index=X_valid_cat.index, columns=OH_encoder.get_feature_names_out())
-    
-    # Add preprocessed categorical columns back to preprocessed numerical columns
-    X_train_processed = pd.concat([imputed_scaled_X_train_num, OH_cols_train], axis=1)
-    X_valid_processed = pd.concat([imputed_scaled_X_valid_num, OH_cols_valid], axis=1)
-    
-    return X_train_processed, X_valid_processed
 
 # ====================================================================================================================
 # Initial modeling of imbalanced data with Logistic Regression

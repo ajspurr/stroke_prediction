@@ -305,8 +305,8 @@ for cat_cols in categorical_cols:
 fig.suptitle('Percent Stroke by Categorical Variable', fontsize=24)
 fig.tight_layout(h_pad=2) # Increase spacing between plots to minimize text overlap
 fig.delaxes(ax_array_flat[7])# Remove empty 8th subplot
-save_filename = 'combined_perc_stroke'
-save_image(output_dir, save_filename, bbox_inches='tight')
+#save_filename = 'combined_perc_stroke'
+#save_image(output_dir, save_filename, bbox_inches='tight')
 plt.show()
 
 # ==========================================================
@@ -318,8 +318,8 @@ for col in numerical_cols:
     #sns.distplot used to plot the histogram and fit line, but it's been deprecated to displot or histplot which don't 
     sns.distplot(dataset[col])
     plt.title(format_col(col) + ' Histogram')
-    save_filename = 'hist_' + col
-    save_image(output_dir, save_filename)
+    #save_filename = 'hist_' + col
+    #save_image(output_dir, save_filename)
     plt.show()
 
 # All continuous variables have somewhat normal or uniform distribution, 'avg_glucose_level' with an obvious positive skew and somewhat 
@@ -331,8 +331,8 @@ for col in numerical_cols:
     sns.kdeplot(data=dataset[dataset.stroke==0], x=col, shade=True, alpha=0.5, label='no stroke')
     plt.title(format_col(col) + ' Distribution by Outcome')
     plt.legend()
-    save_filename = 'hist_by_stroke-' + col
-    save_image(output_dir, save_filename)    
+    #save_filename = 'hist_by_stroke-' + col
+    #save_image(output_dir, save_filename)    
     plt.show()
 
 # Continuous variables 'age' and 'avg_glucose_level' with observable difference in distribution in stroke vs. no stroke
@@ -459,7 +459,7 @@ plt.show()
 # =============================
 # Further exploration association categorical variables
 # =============================
-# Plot catplots of categorical variables with correlation ratio > 0.29
+# Plot catplots of categorical variables with cramers > 0.29
 # Loop through cramers_df diagonally to skip redundant pairings
 for col in range(len(cramers_df.columns)-1):
     for row in range(col+1, 8):
