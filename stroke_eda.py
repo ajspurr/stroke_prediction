@@ -74,7 +74,7 @@ plt.show()
 # Image versions of feature_summary
 # Row indeces normally not included in table image, so I inserted them as the first column
 feature_summary.insert(0, 'Feature', feature_summary.index)
-ax = dh.render_mpl_table(feature_summary, header_columns=0, col_width=2.9, header_color='#2693d7')
+ax = dh.render_mpl_table(feature_summary, header_columns=0, col_width=2.9)
 ax.set_title('Feature Summary:', fontdict={'fontsize':26}, loc='left', weight='bold', pad=20)
 #dh.save_image('feature_summary', eda_output_dir, dpi=600, bbox_inches='tight', pad_inches=0)
 plt.show()
