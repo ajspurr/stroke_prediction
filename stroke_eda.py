@@ -12,7 +12,7 @@ from pathlib import PureWindowsPath, Path
 project_dir = PureWindowsPath(r"D:\GitHubProjects\stroke_prediction\\")
 chdir(project_dir)
 dataset = pd.read_csv('./input/stroke-data.csv', index_col='id')
-output_dir = Path(project_dir, Path('./output/eda'))
+eda_output_dir = Path(project_dir, Path('./output/eda'))
 
 # Import my data science helper functions (relative dir based on project_dir)
 my_module_dir = str(Path.resolve(Path('../my_ds_modules')))
@@ -51,10 +51,10 @@ print(dataset['stroke'].isnull().sum())
 # Explore features
 # =============================
 feature_summary = pd.DataFrame()
-feature_summary['dtype'] = dataset.dtypes
-feature_summary['unique_values'] = dataset.nunique()
-feature_summary['missing_values'] = dataset.isnull().sum()
-feature_summary['percent_missing'] = round((feature_summary['missing_values'] / len(dataset.index)) * 100, 2)
+feature_summary['Data Type'] = dataset.dtypes
+feature_summary['Unique Values'] = dataset.nunique()
+feature_summary['Missing Values'] = dataset.isnull().sum()
+feature_summary['Percent Missing'] = round((feature_summary['Missing Values'] / len(dataset.index)) * 100, 2)
 
 print("\nDATASET SHAPE:")
 print(dataset.shape)
@@ -72,9 +72,8 @@ dh.df_shape_to_img(dataset, h_spacing_between_numbers=0.45)
 plt.show()
 
 # Image versions of feature_summary
-# Row indeces normally not includes, rather that rewrite the function, I made them the first column
+# Row indeces normally not included in table image, so I inserted them as the first column
 feature_summary.insert(0, 'Feature', feature_summary.index)
-
 ax = dh.render_mpl_table(feature_summary, header_columns=0, col_width=2.9, header_color='#2693d7')
 ax.set_title('Feature Summary:', fontdict={'fontsize':26}, loc='left', weight='bold', pad=20)
 #dh.save_image('feature_summary', eda_output_dir, dpi=600, bbox_inches='tight', pad_inches=0)
