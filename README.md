@@ -37,9 +37,11 @@ In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.k
 ## EDA
 Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/output/eda](/output/eda)
 
-1. Dataset has 5110 rows and 11 columns, a mix of numerical and categorical data types, and minimal missing data. 
+1. Dataset summary below. Fortunately, there is minimal missing data. 
 
-<p align="center"><img src="/output/eda/feature_summary.png" width="600"/></p>
+<p align="center"><img src="/output/eda/data_overview.png" width="600"/></p>
+<p align="center"><img src="/output/eda/feature_summary.png" width="900"/></p>
+
 <br>
 2. Visualization of categorical variables below. Notably, the target variable (stroke) is highly imbalanced. 
 
