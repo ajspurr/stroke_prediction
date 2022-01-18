@@ -3,6 +3,8 @@ About 800,000 people in the United States have a stroke each year, making it a l
 
 In this analysis, I explore the Kaggle [Stroke Prediction Dataset](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset). I'll go through the major steps in Machine Learning to build and evaluate classification models to predict whether or not an individual is likely to have a stroke. This doesn't necessarily calculate a lifetime risk of stroke or chances of an acute stroke, but it can identify high-risk individuals who should take the preventive actions mentioned above.  
 
+Origin of the data: the Kaggle user who posted the dataset, [fedesoriano](https://www.kaggle.com/fedesoriano), notes that this data comes from a confidential source and is to be used only for educational purposes.
+
 ## Analysis Highlights
 - Exploratory Data Analysis: 
   - Dataset of 5110 individuals with features such as gender, age, BMI, and presence/absense of heart disease and hypertension
