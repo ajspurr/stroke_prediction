@@ -209,6 +209,7 @@ Repeated the same hyperparameter parameter tuning as above, but optized for reca
 
 ## Potential Next Steps
 - Improve predictions
+  - Work through assumptions of logistic regression
   - Improve hyperparameter tuning of current models
     - Explore how to further optimize models for unbalanced data
     - More precise hyperparameter tuning
