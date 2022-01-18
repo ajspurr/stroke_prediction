@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import pandas as pd
 from os import chdir
@@ -12,6 +13,11 @@ project_dir = PureWindowsPath(r"D:\GitHubProjects\stroke_prediction\\")
 chdir(project_dir)
 dataset = pd.read_csv('./input/stroke-data.csv', index_col='id')
 output_dir = Path(project_dir, Path('./output/eda'))
+
+# Import my data science helper functions (relative dir based on project_dir)
+my_module_dir = str(Path.resolve(Path('../my_ds_modules')))
+sys.path.insert(0, my_module_dir)
+import ds_helper as dh
 
 # ====================================================================================================================
 # EXPLORATORY DATA ANALYSIS 
@@ -57,6 +63,26 @@ print(feature_summary)
 
 # Column 'bmi'  missing 201 values, about 4% of the total, will address later
 
+# =============================
+# Create images summarizing dataset
+# =============================
+# Image versions of dataset.shape
+dh.df_shape_to_img(dataset, h_spacing_between_numbers=0.45)
+#dh.save_image('data_overview', eda_output_dir, dpi=600, bbox_inches='tight', pad_inches=0)
+plt.show()
+
+# Image versions of feature_summary
+# Row indeces normally not includes, rather that rewrite the function, I made them the first column
+feature_summary.insert(0, 'Feature', feature_summary.index)
+
+ax = dh.render_mpl_table(feature_summary, header_columns=0, col_width=2.9, header_color='#2693d7')
+ax.set_title('Feature Summary:', fontdict={'fontsize':26}, loc='left', weight='bold', pad=20)
+#dh.save_image('feature_summary', eda_output_dir, dpi=600, bbox_inches='tight', pad_inches=0)
+plt.show()
+
+# =============================
+# Organize features
+# =============================
 # Separate categorical and numerical features
 categorical_cols = [cname for cname in dataset.columns if dataset[cname].dtype == "object"]
 numerical_cols = [cname for cname in dataset.columns if not dataset[cname].dtype == "object"]
