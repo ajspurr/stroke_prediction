@@ -56,7 +56,7 @@ Most of the features are self-explanatory, and the categories of each categorica
 
 <br><p align="center"><img src="/output/eda/combined_cat_counts.png" width="900"/></p>
 <br>
-3. Stroke prevalence noticeably higher in those with hypertension, heart disease, and who have ever been married. Noticeably lower in children and individuals who have never worked.
+3. Stroke prevalence noticeably higher in those with hypertension, heart disease, and who have ever been married. Noticeably lower in children and individuals who have never worked. To be clear, the percentage is within each subcategory. So, in this case, about 4.5% of females had a stroke.
 
 <br><p align="center"><img src="/output/eda/combined_perc_stroke.png" width="900"/></p> 
 <br>
