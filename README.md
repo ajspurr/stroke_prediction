@@ -42,7 +42,7 @@ Full code: [stroke_eda.py](/stroke_eda.py) <br> All figures: [stroke_prediction/
 1. Dataset summary below. Fortunately, there is minimal missing data. 
 
 <p align="center"><img src="/output/eda/data_overview.png" width="600"/></p>
-<p align="center"><img src="/output/eda/feature_summary.png" width="900"/></p>
+<p align="center"><img src="/output/eda/feature_summary_2.png" width="1200"/></p>
 
 Most of the features are self-explanatory, and the categories of each categorical variable can be seen below. But I will clarify a few here:
 - hypertension: presence or absence of hypertension
