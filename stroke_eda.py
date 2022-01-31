@@ -52,9 +52,17 @@ print(dataset['stroke'].isnull().sum())
 # =============================
 feature_summary = pd.DataFrame()
 feature_summary['Data Type'] = dataset.dtypes
-feature_summary['Unique Values'] = dataset.nunique()
-feature_summary['Missing Values'] = dataset.isnull().sum()
-feature_summary['Percent Missing'] = round((feature_summary['Missing Values'] / len(dataset.index)) * 100, 2)
+feature_summary['Num Unique'] = dataset.nunique()
+feature_summary['Num Missing'] = dataset.isnull().sum()
+feature_summary['% Missing'] = round((feature_summary['Num Missing'] / len(dataset.index)) * 100, 2)
+
+# Grab info from dataset.describe()
+numerical_var_info = dataset.describe().T
+feature_summary['Min'] = np.round(numerical_var_info['min'], 2)
+feature_summary['Max'] = np.round(numerical_var_info['max'], 2)
+feature_summary['Mean'] = np.round(numerical_var_info['mean'], 2)
+feature_summary['Median'] = np.round(numerical_var_info['50%'], 2)
+feature_summary['Std'] = np.round(numerical_var_info['std'], 2)
 
 print("\nDATASET SHAPE:")
 print(dataset.shape)
@@ -73,10 +81,11 @@ plt.show()
 
 # Image versions of feature_summary
 # Row indeces normally not included in table image, so I inserted them as the first column
-feature_summary.insert(0, 'Feature', feature_summary.index)
+#feature_summary.insert(0, 'Feature', feature_summary.index)
+
 ax = dh.render_mpl_table(feature_summary, header_columns=0, col_width=2.9)
 ax.set_title('Feature Summary:', fontdict={'fontsize':26}, loc='left', weight='bold', pad=20)
-#dh.save_image('feature_summary', eda_output_dir, dpi=600, bbox_inches='tight', pad_inches=0)
+#dh.save_image('feature_summary_2', eda_output_dir, dpi=600, bbox_inches='tight', pad_inches=0)
 plt.show()
 
 # =============================
