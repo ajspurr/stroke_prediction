@@ -79,7 +79,7 @@ Most of the features are self-explanatory, and the categories of each categorica
 As noted above, 4% of BMI data missing. As these values are missing because they weren't recorded (as opposed to being values that don't exist) they can be imputed. I do not want to remove the rows completely and lose 4% of the data. I do not want to remove the entire column as BMI is likely helpful in predicting stroke. Will use sklearn SimpleImputer to replace missing data with mean BMI.
 
 #### Scaling
-Will scale continuous variables using sklearn StandardScaler.
+Will scale (technically standardize) continuous variables using sklearn StandardScaler.
 
 #### Categorical Variable Encoding
 Ordinal encoding would not be useful as categorical variables are not ordinal. One-hot encoding is appropriate, especially since all features have low cardinality, so it won't need to create 10s or 100s of new columns. 
